@@ -15,7 +15,7 @@ import zx.soft.utils.log.LogbackUtil;
  * @author wanggang
  *
  */
-public class FirstPageHarmful {
+public class FirstPageHarmful implements FirstPagePersistable {
 
 	private static Logger logger = LoggerFactory.getLogger(FirstPageHarmful.class);
 
@@ -33,6 +33,7 @@ public class FirstPageHarmful {
 	/**
 	 * 插入OA首页查询数据
 	 */
+	@Override
 	public void insertFirstPage(int type, String timestr, String result) {
 		try (SqlSession sqlSession = sqlSessionFactory.openSession();) {
 			FirstPageHarmfulMapper firstPageMapper = sqlSession.getMapper(FirstPageHarmfulMapper.class);
@@ -43,6 +44,7 @@ public class FirstPageHarmful {
 	/**
 	 * 更新OA首页查询数据
 	 */
+	@Override
 	public void updateFirstPage(int type, String timestr, String result) {
 		try (SqlSession sqlSession = sqlSessionFactory.openSession();) {
 			FirstPageHarmfulMapper firstPageMapper = sqlSession.getMapper(FirstPageHarmfulMapper.class);
@@ -53,6 +55,7 @@ public class FirstPageHarmful {
 	/**
 	 * 查询OA首页查询数据
 	 */
+	@Override
 	public String selectFirstPage(int type, String timestr) {
 		try (SqlSession sqlSession = sqlSessionFactory.openSession();) {
 			FirstPageHarmfulMapper firstPageMapper = sqlSession.getMapper(FirstPageHarmfulMapper.class);
@@ -63,6 +66,7 @@ public class FirstPageHarmful {
 	/**
 	 * 删除OA首页查询数据
 	 */
+	@Override
 	public void deleteFirstPage(int type, String timestr) {
 		try (SqlSession sqlSession = sqlSessionFactory.openSession();) {
 			FirstPageHarmfulMapper firstPageMapper = sqlSession.getMapper(FirstPageHarmfulMapper.class);

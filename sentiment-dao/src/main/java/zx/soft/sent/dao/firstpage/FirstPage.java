@@ -11,11 +11,11 @@ import zx.soft.utils.log.LogbackUtil;
 
 /**
  * OA首页查询信息
- * 
+ *
  * @author wanggang
  *
  */
-public class FirstPage {
+public class FirstPage implements FirstPagePersistable {
 
 	private static Logger logger = LoggerFactory.getLogger(FirstPage.class);
 
@@ -33,6 +33,7 @@ public class FirstPage {
 	/**
 	 * 插入OA首页查询数据
 	 */
+	@Override
 	public void insertFirstPage(int type, String timestr, String result) {
 		try (SqlSession sqlSession = sqlSessionFactory.openSession();) {
 			FirstPageMapper firstPageMapper = sqlSession.getMapper(FirstPageMapper.class);
@@ -43,6 +44,7 @@ public class FirstPage {
 	/**
 	 * 更新OA首页查询数据
 	 */
+	@Override
 	public void updateFirstPage(int type, String timestr, String result) {
 		try (SqlSession sqlSession = sqlSessionFactory.openSession();) {
 			FirstPageMapper firstPageMapper = sqlSession.getMapper(FirstPageMapper.class);
@@ -53,6 +55,7 @@ public class FirstPage {
 	/**
 	 * 查询OA首页查询数据
 	 */
+	@Override
 	public String selectFirstPage(int type, String timestr) {
 		try (SqlSession sqlSession = sqlSessionFactory.openSession();) {
 			FirstPageMapper firstPageMapper = sqlSession.getMapper(FirstPageMapper.class);
@@ -63,6 +66,7 @@ public class FirstPage {
 	/**
 	 * 删除OA首页查询数据
 	 */
+	@Override
 	public void deleteFirstPage(int type, String timestr) {
 		try (SqlSession sqlSession = sqlSessionFactory.openSession();) {
 			FirstPageMapper firstPageMapper = sqlSession.getMapper(FirstPageMapper.class);

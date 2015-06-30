@@ -8,17 +8,16 @@ import zx.soft.utils.log.LogbackUtil;
 
 /**
  * OA首页查询信息
- *
- * @author wanggang
+ * @author donglei
  *
  */
-public class RiakFirstPageHarmful {
+public class RiakFirstPage implements FirstPagePersistable {
 
-	private static Logger logger = LoggerFactory.getLogger(RiakFirstPageHarmful.class);
+	private static Logger logger = LoggerFactory.getLogger(RiakFirstPage.class);
 
 	private final RiakClientInstance riakClient;
 
-	public RiakFirstPageHarmful() {
+	public RiakFirstPage() {
 		try {
 			riakClient = new RiakClientInstance();
 		} catch (RuntimeException e) {
@@ -30,6 +29,7 @@ public class RiakFirstPageHarmful {
 	/**
 	 * 插入OA首页查询数据
 	 */
+	@Override
 	public void insertFirstPage(int type, String timestr, String result) {
 		riakClient.writeString("default", type + "", timestr, result);
 	}
@@ -37,6 +37,7 @@ public class RiakFirstPageHarmful {
 	/**
 	 * 查询OA首页查询数据
 	 */
+	@Override
 	public String selectFirstPage(int type, String timestr) {
 		return new String(riakClient.readString("default", type + "", timestr).getValue().getValue());
 	}
@@ -44,6 +45,7 @@ public class RiakFirstPageHarmful {
 	/**
 	 * 删除OA首页查询数据
 	 */
+	@Override
 	public void deleteFirstPage(int type, String timestr) {
 		riakClient.deleteObject("default", type + "", timestr);
 	}
@@ -52,6 +54,12 @@ public class RiakFirstPageHarmful {
 		if (riakClient != null) {
 			riakClient.close();
 		}
+	}
+
+	@Override
+	public void updateFirstPage(int type, String timestr, String result) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

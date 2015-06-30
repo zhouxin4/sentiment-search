@@ -10,7 +10,7 @@ import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
 
-import zx.soft.sent.dao.firstpage.RiakFirstPageHarmful;
+import zx.soft.sent.dao.firstpage.RiakFirstPage;
 import zx.soft.sent.web.resource.FirstPageHarmfulResource;
 import zx.soft.utils.chars.JavaPattern;
 import zx.soft.utils.json.JsonNodeUtils;
@@ -18,11 +18,11 @@ import zx.soft.utils.json.JsonNodeUtils;
 public class FirstPageHarmfulApplication extends Application {
 
 	//	private final FirstPageHarmful firstPage;
-	private RiakFirstPageHarmful firstPage;
+	private RiakFirstPage firstPage;
 
 	public FirstPageHarmfulApplication() {
 		//		firstPage = new FirstPageHarmful(MybatisConfig.ServerEnum.sentiment);
-		firstPage = new RiakFirstPageHarmful();
+		firstPage = new RiakFirstPage();
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.negative.sentiment.core.NegativeClassify;
-import zx.soft.sent.dao.firstpage.RiakFirstPageHarmful;
+import zx.soft.sent.dao.firstpage.RiakFirstPage;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
 
@@ -44,7 +44,7 @@ public class FirstPageHarmfulRun {
 	public void run() {
 		logger.info("Starting query OA-FirstPage-Harmful data...");
 		//		FirstPageHarmful firstPage = new FirstPageHarmful(MybatisConfig.ServerEnum.sentiment);
-		RiakFirstPageHarmful firstPage = new RiakFirstPageHarmful();
+		RiakFirstPage firstPage = new RiakFirstPage();
 		OAFirstPage oafirstPage = new OAFirstPage();
 		NegativeClassify negativeClassify = new NegativeClassify();
 		/**
