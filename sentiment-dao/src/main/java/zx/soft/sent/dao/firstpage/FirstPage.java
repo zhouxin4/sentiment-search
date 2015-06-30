@@ -74,4 +74,10 @@ public class FirstPage implements FirstPagePersistable {
 		}
 	}
 
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

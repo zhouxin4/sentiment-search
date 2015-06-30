@@ -31,9 +31,9 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @author wanggang
  *
  */
-public class RiakClientInstance {
+public class RiakInstance {
 
-	private static Logger logger = LoggerFactory.getLogger(RiakClientInstance.class);
+	private static Logger logger = LoggerFactory.getLogger(RiakInstance.class);
 
 	private static RiakCluster cluster;
 	private RiakClient client;
@@ -44,7 +44,7 @@ public class RiakClientInstance {
 	private static String ipsStr;
 	private static String[] ips;
 
-	public RiakClientInstance() {
+	public RiakInstance() {
 		try {
 			Properties props = ConfigUtil.getProps("riak.properties");
 			RiakNode.Builder builder = new RiakNode.Builder()
@@ -167,7 +167,7 @@ public class RiakClientInstance {
 	}
 
 	public static void main(String[] args) {
-		RiakClientInstance cluster = new RiakClientInstance();
+		RiakInstance cluster = new RiakInstance();
 		//		cluster.writeString("default", "strings", "key1", "[\"287,296,309\"]");
 		//		RiakObject s = cluster.readString("default", "strings", "key1");
 		//		System.out.println(new String(s.getValue().getValue()));

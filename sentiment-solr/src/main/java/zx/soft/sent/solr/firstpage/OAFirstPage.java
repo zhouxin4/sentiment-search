@@ -1,7 +1,6 @@
 package zx.soft.sent.solr.firstpage;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -96,12 +95,14 @@ public class OAFirstPage {
 	public HashMap<String, Long> getTodayPlatformInputSum(int day) {
 		logger.info("Getting today platform's sum ...");
 		HashMap<String, Long> result = null;
-		// 注意：86400_000L必能换成86400_000，否则会超出int型的范围，从而导致计算错误，应当为long型。
-		long currentTime = System.currentTimeMillis() - day * 86400_000L;
-		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
-		if (new Date(currentTime).getHours() < 8) {
-			startTime += 1 * 86400_000L;
-		}
+		//		// 注意：86400_000L必能换成86400_000，否则会超出int型的范围，从而导致计算错误，应当为long型。
+		//		long currentTime = System.currentTimeMillis() - day * 86400_000L;
+		//		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
+		//		if (new Date(currentTime).getHours() < 8) {
+		//			startTime += 1 * 86400_000L;
+		//		}
+		long currentTime = TimeUtils.transCurrentTime(System.currentTimeMillis(), 0, 0, -day, 0);
+		long startTime = TimeUtils.getMidnight(System.currentTimeMillis(), -day);
 		QueryParams queryParams = new QueryParams();
 		queryParams.setRows(0);
 		queryParams.setFacetField("platform");
@@ -140,13 +141,16 @@ public class OAFirstPage {
 	public HashMap<String, Long> getTodayWeibosSum(int day, int hour) {
 		logger.info("Getting today weibos' sum ...");
 		HashMap<String, Long> result = initWeibosResult();
-		long currentTime = System.currentTimeMillis() - day * 86400_000L;
-		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
-		if (new Date(currentTime).getHours() < 8) {
-			startTime += 1 * 86400_000L;
-		}
-		long endTime = startTime + hour * 3600_000; // 该天的第hour时刻，时间间隔为三小时
-		startTime = endTime - 3 * 3600_000; // 该天的第hour-3时刻
+		//		long currentTime = System.currentTimeMillis() - day * 86400_000L;
+		//		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
+		//		if (new Date(currentTime).getHours() < 8) {
+		//			startTime += 1 * 86400_000L;
+		//		}
+		//		long endTime = startTime + hour * 3600_000; // 该天的第hour时刻，时间间隔为三小时
+		//		startTime = endTime - 3 * 3600_000; // 该天的第hour-3时刻
+		long currentTime = TimeUtils.getMidnight(System.currentTimeMillis(), 0);
+		long endTime = TimeUtils.transCurrentTime(currentTime, 0, 0, 0, hour);
+		long startTime = TimeUtils.transCurrentTime(endTime, 0, 0, 0, -3);
 
 		QueryParams queryParams = new QueryParams();
 		queryParams.setRows(0);
@@ -220,8 +224,8 @@ public class OAFirstPage {
 	}
 
 	private List<SolrDocument> getNegativeShard(int platform, int day, int N, String q) {
-		long currentTime = System.currentTimeMillis() - day * 86400_000L;
-		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
+		long currentTime = TimeUtils.transCurrentTime(System.currentTimeMillis(), 0, 0, -day, 0);
+		long startTime = TimeUtils.getMidnight(System.currentTimeMillis(), -day);
 		QueryParams queryParams = new QueryParams();
 		queryParams.setQ(q);
 		queryParams.setQop("OR");
@@ -260,8 +264,10 @@ public class OAFirstPage {
 	}
 
 	private List<SolrDocument> getHarmfulShard(String platform, int day, int N, String q) {
-		long currentTime = System.currentTimeMillis() - day * 86400_000L;
-		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
+		//		long currentTime = System.currentTimeMillis() - day * 86400_000L;
+		//		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
+		long startTime = TimeUtils.getMidnight(System.currentTimeMillis(), -day);
+		long currentTime = TimeUtils.transCurrentTime(System.currentTimeMillis(), 0, 0, -day, 0);
 		QueryParams queryParams = new QueryParams();
 		queryParams.setQ(q);
 		queryParams.setQop("OR");

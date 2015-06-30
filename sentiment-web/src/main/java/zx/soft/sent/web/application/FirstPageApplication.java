@@ -15,8 +15,8 @@ import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
 
-import zx.soft.sent.dao.common.MybatisConfig;
-import zx.soft.sent.dao.firstpage.FirstPage;
+import zx.soft.sent.dao.firstpage.FirstPagePersistable;
+import zx.soft.sent.dao.firstpage.RiakFirstPage;
 import zx.soft.sent.web.resource.FirstPageResource;
 import zx.soft.utils.chars.JavaPattern;
 import zx.soft.utils.json.JsonNodeUtils;
@@ -28,10 +28,11 @@ public class FirstPageApplication extends Application {
 	private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
 	//	private static final SimpleDateFormat FORMATTER_HH = new SimpleDateFormat("yyyy-MM-dd,HH");
 
-	private final FirstPage firstPage;
+	private final FirstPagePersistable firstPage;
 
 	public FirstPageApplication() {
-		firstPage = new FirstPage(MybatisConfig.ServerEnum.sentiment);
+		//		firstPage = new FirstPage(MybatisConfig.ServerEnum.sentiment);
+		firstPage = new RiakFirstPage();
 	}
 
 	@Override

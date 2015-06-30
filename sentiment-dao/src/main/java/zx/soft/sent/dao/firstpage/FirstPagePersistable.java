@@ -27,4 +27,8 @@ public interface FirstPagePersistable {
 	 */
 	void deleteFirstPage(int type, String timestr);
 
+	/**
+	 * 关闭相关资源
+	 */
+	void close();
 }

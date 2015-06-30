@@ -86,7 +86,25 @@ public class FirstPageRun {
 		negativeRecordsWeibo = getTopNNegativeRecords(negativeClassify, negativeRecordsWeibo, 20);
 		firstPage.insertFirstPage(52, timeStrByHour(), JsonUtils.toJsonWithoutPretty(negativeRecordsForum));
 		firstPage.insertFirstPage(53, timeStrByHour(), JsonUtils.toJsonWithoutPretty(negativeRecordsWeibo));
+
+		/**
+		 * 对当天的各平台进入数据进行负面评分，并按照分值推送最大的签20条内容，每小时推送一次。
+		 */
+		/*for (int i = 1; i < SentimentConstant.PLATFORM_ARRAY.length; i++) {
+			logger.info("Retriving platform:{}", i);
+			List<SolrDocument> negativeRecordsForum = oafirstPage.getNegativeRecords(i, 0, 30);
+			negativeRecordsForum = FirstPageRun.getTopNNegativeRecords(negativeClassify, negativeRecordsForum, 50);
+			firstPage.insertFirstPage(i, FirstPageRun.timeStrByHour(),
+					JsonUtils.toJsonWithoutPretty(negativeRecordsForum));
+		}*/
+
+		negativeRecordsForum = oafirstPage.getHarmfulRecords("1,2,3,4,7,10", 0, 30);
+		negativeRecordsForum = FirstPageRun.getTopNNegativeRecords(negativeClassify, negativeRecordsForum, 50);
+		firstPage.insertFirstPage(0, FirstPageRun.timeStrByHour(), JsonUtils.toJsonWithoutPretty(negativeRecordsForum));
+		//		System.out.println(JsonUtils.toJson(negativeRecordsForum));
+
 		// 关闭资源
+		firstPage.close();
 		negativeClassify.cleanup();
 		oafirstPage.close();
 		logger.info("Finishing query OA-FirstPage data...");

@@ -3,8 +3,10 @@ package zx.soft.sent.dao.firstpage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.dao.riak.RiakClientInstance;
+import zx.soft.sent.dao.riak.RiakInstance;
 import zx.soft.utils.log.LogbackUtil;
+
+import com.basho.riak.client.core.query.RiakObject;
 
 /**
  * OA首页查询信息
@@ -15,11 +17,11 @@ public class RiakFirstPage implements FirstPagePersistable {
 
 	private static Logger logger = LoggerFactory.getLogger(RiakFirstPage.class);
 
-	private final RiakClientInstance riakClient;
+	private final RiakInstance riakClient;
 
 	public RiakFirstPage() {
 		try {
-			riakClient = new RiakClientInstance();
+			riakClient = new RiakInstance();
 		} catch (RuntimeException e) {
 			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
 			throw new RuntimeException(e);
@@ -39,7 +41,11 @@ public class RiakFirstPage implements FirstPagePersistable {
 	 */
 	@Override
 	public String selectFirstPage(int type, String timestr) {
-		return new String(riakClient.readString("default", type + "", timestr).getValue().getValue());
+		RiakObject riakObject = riakClient.readString("default", type + "", timestr);
+		if (riakObject == null) {
+			return null;
+		}
+		return new String(riakObject.getValue().getValue());
 	}
 
 	/**
@@ -50,6 +56,7 @@ public class RiakFirstPage implements FirstPagePersistable {
 		riakClient.deleteObject("default", type + "", timestr);
 	}
 
+	@Override
 	public void close() {
 		if (riakClient != null) {
 			riakClient.close();

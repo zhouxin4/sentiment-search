@@ -40,7 +40,7 @@ public class FirstPageResource extends ServerResource {
 			result = application.selectFirstPageType12(t, datestr);
 		} else if (t == 4) {
 			result = application.selectFirstPageType4(datestr);
-		} else if (t == 52 || t == 53) {
+		} else if (t == 0 || t == 52 || t == 53) {
 			result = application.selectFirstPageType5(t, datestr);
 		}
 		if (result == null) {
