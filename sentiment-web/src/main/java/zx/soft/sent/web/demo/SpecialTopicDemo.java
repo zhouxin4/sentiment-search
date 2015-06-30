@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import zx.soft.sent.dao.domain.special.SpecialTopic;
+import zx.soft.utils.checksum.CheckSumUtils;
 import zx.soft.utils.json.JsonUtils;
 
 public class SpecialTopicDemo {
@@ -28,6 +29,6 @@ public class SpecialTopicDemo {
 		specialTopics.add(st1);
 		specialTopics.add(st2);
 		System.out.println(JsonUtils.toJsonWithoutPretty(specialTopics));
+		System.out.println(CheckSumUtils.getMD5("378,382,18"));
 	}
-
 }

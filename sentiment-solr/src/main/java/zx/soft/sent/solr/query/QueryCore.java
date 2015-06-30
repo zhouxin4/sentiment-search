@@ -97,6 +97,21 @@ public class QueryCore {
 		}
 	}
 
+	public List<Count> queryData(SolrQuery query) {
+		QueryResponse queryResponse = null;
+		try {
+			queryResponse = cloudServer.query(query, METHOD.POST);
+			// GET方式的时候所有查询条件都是拼装到url上边的，url过长当然没有响应，必然中断talking了
+			//			queryResponse = server.query(query, METHOD.GET);
+		} catch (SolrServerException e) {
+			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
+			throw new RuntimeException(e);
+		}
+		FacetField fields = queryResponse.getFacetField("source_id");
+		return fields.getValues();
+	}
+
+
 	/**
 	 * 根据多条件查询结果数据
 	 */

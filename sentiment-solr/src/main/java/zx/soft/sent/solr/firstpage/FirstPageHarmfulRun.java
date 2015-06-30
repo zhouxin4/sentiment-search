@@ -7,8 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.negative.sentiment.core.NegativeClassify;
-import zx.soft.sent.dao.common.MybatisConfig;
-import zx.soft.sent.dao.firstpage.FirstPageHarmful;
+import zx.soft.sent.dao.firstpage.RiakFirstPageHarmful;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
 
@@ -44,7 +43,8 @@ public class FirstPageHarmfulRun {
 
 	public void run() {
 		logger.info("Starting query OA-FirstPage-Harmful data...");
-		FirstPageHarmful firstPage = new FirstPageHarmful(MybatisConfig.ServerEnum.sentiment);
+		//		FirstPageHarmful firstPage = new FirstPageHarmful(MybatisConfig.ServerEnum.sentiment);
+		RiakFirstPageHarmful firstPage = new RiakFirstPageHarmful();
 		OAFirstPage oafirstPage = new OAFirstPage();
 		NegativeClassify negativeClassify = new NegativeClassify();
 		/**
@@ -62,6 +62,7 @@ public class FirstPageHarmfulRun {
 		negativeRecordsForum = FirstPageRun.getTopNNegativeRecords(negativeClassify, negativeRecordsForum, 50);
 		firstPage.insertFirstPage(0, FirstPageRun.timeStrByHour(), JsonUtils.toJsonWithoutPretty(negativeRecordsForum));
 		//		System.out.println(JsonUtils.toJson(negativeRecordsForum));
+		firstPage.close();
 
 		// 关闭资源
 		negativeClassify.cleanup();
