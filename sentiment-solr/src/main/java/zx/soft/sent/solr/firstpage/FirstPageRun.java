@@ -24,6 +24,9 @@ import zx.soft.utils.sort.InsertSort;
  * OA首页信息定时分析：hefei07
  *
  * 运行目录：/home/zxdfs/run-work/timer/oa-firstpage
+ * 注： 老版本访问数据库firstpagerun、firstpageharmfulRun;分别运行在oa-firstpage、oa-firstpageharmful
+ *     *中间状态oa-firstpage仍然保留数据库的版本firstpagerun。firstpagerun、firstpageharmfulRun合并部署在oa-firstpageharmful
+ *     最终状态： 无oa-firstpageharmful，合并后部署在oa-firstpage
  * 运行命令：./firstpage_timer.sh &
  *
  * @author wanggang

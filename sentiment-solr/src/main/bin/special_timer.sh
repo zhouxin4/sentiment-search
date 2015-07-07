@@ -3,7 +3,7 @@
 echo "Starting ..."
 while (true)
 do
-    java -jar sentiment-solr-2.2.0-jar-with-dependencies.jar specialTopicRun
+    bin/ctl.sh start specialTopicRun
     sleep 1h
 done
 echo "Finishing ..."

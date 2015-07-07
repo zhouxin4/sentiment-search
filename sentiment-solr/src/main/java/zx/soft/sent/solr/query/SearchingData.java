@@ -54,7 +54,7 @@ public class SearchingData {
 	private static final String[] PLATFORMS = { "其他类", "资讯类", "论坛类", "微博类", "博客类", "QQ类", "搜索类", "回复类", "邮件类", "图片类",
 			"微信类" };
 
-	private enum Shards {
+	public enum Shards {
 		shard1, shard2, shard3, shard4, shard5, shard6
 	};
 

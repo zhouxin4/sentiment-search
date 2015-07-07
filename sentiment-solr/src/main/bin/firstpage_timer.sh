@@ -1,12 +1,12 @@
 #!/bin/bash
 
 echo "Starting ..."
-bin/ctl.sh start firstPageHarmfulRun
+bin/ctl.sh start firstPageRun
 echo "OneLoop Finished!"
 while (true)
 do
-    sleep 30m
-    bin/ctl.sh start firstPageHarmfulRun
+    sleep 1800
+    bin/ctl.sh start firstPageRun
 	echo "OneLoop Finished!"
 done
 echo "Finishing ..."
