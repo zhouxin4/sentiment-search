@@ -67,13 +67,12 @@ public class NicknameGroupApplication extends Application {
 				table = InsertSort.toptable(table, tmp.getKey() + "=" + tmp.getValue());
 			}
 			HashMap<String, Integer> result = new LinkedHashMap<>();
-			String[] t = null;
 			for (int i = 0; i < table.length; i++) {
 				if ("0=0".equalsIgnoreCase(table[i])) {
 					break;
 				}
-				t = table[i].split("=");
-				result.put(t[0], Integer.parseInt(t[1]));
+				int lastindex = table[i].lastIndexOf("=");
+				result.put(table[i].substring(0, lastindex), Integer.parseInt(table[i].substring(lastindex + 1)));
 			}
 			System.err.println(System.currentTimeMillis() - startTime);
 			return result;
