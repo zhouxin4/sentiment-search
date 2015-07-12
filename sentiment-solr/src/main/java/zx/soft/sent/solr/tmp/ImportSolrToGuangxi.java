@@ -52,7 +52,7 @@ public class ImportSolrToGuangxi {
 					.selectRecordsByLasttime(tableName, new Date(low), new Date(current));
 			for (RecordSelect record : records) {
 				int platform = record.getPlatform();
-				if (platform == 1 || platform == 4 || platform == 5) {
+				if (platform == 1 || platform == 3 || platform == 4 || platform == 5) {
 					RecordInfo info = parseRecord(record);
 					String response = new HttpClientDaoImpl().doPost(BASE_URL,
 							JsonUtils.toJsonWithoutPretty(info));

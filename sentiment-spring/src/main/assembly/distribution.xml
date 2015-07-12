@@ -29,6 +29,13 @@
 			<outputDirectory>/ik_dic</outputDirectory>
 		</fileSet>
 		<fileSet>
+			<directory>dics</directory>
+			<includes>
+				<include>*</include>
+			</includes>
+			<outputDirectory>/dics</outputDirectory>
+		</fileSet>
+		<fileSet>
 			<directory>src/main/bin</directory>
 			<includes>
 				<include>*</include>
