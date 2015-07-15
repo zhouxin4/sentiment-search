@@ -12,12 +12,18 @@ import org.apache.solr.common.util.NamedList;
 
 /**
  * 查询结果类
- * 
+ *
  * @author wanggang
  *
  */
 @SuppressWarnings("rawtypes")
 public class QueryResult {
+
+	/**
+	 *  added by donglei
+	 *  多线程的标志
+	 */
+	private String tag;
 
 	private long numFound;
 	// Direct pointers to known types
@@ -130,6 +136,14 @@ public class QueryResult {
 
 	public void setFacetPivot(NamedList<List<PivotField>> facetPivot) {
 		this.facetPivot = facetPivot;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 
 }

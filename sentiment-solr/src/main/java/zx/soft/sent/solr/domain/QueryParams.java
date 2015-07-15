@@ -4,11 +4,11 @@ import java.util.HashMap;
 
 /**
  * 查询参数类
- * 
+ *
  * @author wanggang
  *
  */
-public class QueryParams {
+public class QueryParams implements Cloneable {
 
 	private String q = "*:*";
 	private String fq = "";
@@ -28,15 +28,36 @@ public class QueryParams {
 	// 默认，facet=true
 	private HashMap<String, String> facetDate = new HashMap<>();
 
+	private String facetRange = null;
+	private String facetRangeStart = null;
+	private String facetRangeEnd = null;
+	private String facetRangeGap = null;
+
 	public QueryParams() {
 		//
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public QueryParams clone() {
+		QueryParams params = null;
+		try {
+			params = (QueryParams) super.clone();
+			params.facetDate = (HashMap<String, String>)this.facetDate.clone();
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return params;
 	}
 
 	@Override
 	public String toString() {
 		return "QueryParams:{q=" + q + ",fq=" + fq + ",sort=" + sort + ",start=" + start + ",rows=" + rows + ",fl="
 				+ fl + ",wt=" + wt + ",hlfl=" + hlfl + ",hlsimple=" + hlsimple + ",facetQuery=" + facetQuery
-				+ ",facetField=" + facetField + ",qop=" + qop + "}";
+				+ ",facetField=" + facetField + ",qop=" + qop + ",facetRange=" + facetRange + ",facetRangeStart="
+				+ facetRangeStart + ",facetRangeEnd=" + facetRangeEnd + "}";
 	}
 
 	public void setQ(String q) {
@@ -141,6 +162,38 @@ public class QueryParams {
 
 	public void setQop(String qop) {
 		this.qop = qop;
+	}
+
+	public String getFacetRange() {
+		return facetRange;
+	}
+
+	public void setFacetRange(String facetRange) {
+		this.facetRange = facetRange;
+	}
+
+	public String getFacetRangeStart() {
+		return facetRangeStart;
+	}
+
+	public void setFacetRangeStart(String facetRangeStart) {
+		this.facetRangeStart = facetRangeStart;
+	}
+
+	public String getFacetRangeEnd() {
+		return facetRangeEnd;
+	}
+
+	public void setFacetRangeEnd(String facetRangeEnd) {
+		this.facetRangeEnd = facetRangeEnd;
+	}
+
+	public String getFacetRangeGap() {
+		return facetRangeGap;
+	}
+
+	public void setFacetRangeGap(String facetRangeGap) {
+		this.facetRangeGap = facetRangeGap;
 	}
 
 }

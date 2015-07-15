@@ -92,7 +92,7 @@ public class SearchingData {
 		//		queryParams.setFacetField("nickname");
 		//		QueryResult result = search.queryData(queryParams, true);
 		//		System.out.println(JsonUtils.toJson(result));
-		search.deleteQuery("timestamp:[2000-11-27T00:00:00Z TO 2014-09-30T23:59:59Z]");
+		search.deleteQuery("timestamp:[1970-01-01T00:00:00Z TO 1980-01-17T22:46:37Z]");
 		search.close();
 	}
 

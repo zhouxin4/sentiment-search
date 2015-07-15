@@ -66,18 +66,23 @@ public class QueryCore {
 		QueryCore search = new QueryCore();
 		QueryParams queryParams = new QueryParams();
 		// q:关键词
-		queryParams.setQ("沉船");
+		queryParams.setQ("*:*");
 		//		queryParams.setFq("source_id:607202e6603cb23b3d3173d4ca20a886");
 		//timestamp:[2014-04-22T00:00:00Z TO 2014-04-23T00:00:00Z]
 		//		queryParams.setSort("timestamp:desc"); // lasttime:desc
 		//		queryParams.setStart(0);
-		//		queryParams.setRows(10);
+		queryParams.setRows(0);
 		//		queryParams.setWt("json");
 		//		queryParams.setFl(""); // nickname,content
 		//		queryParams.setHlfl("title,content");
 		//		queryParams.setHlsimple("red");
 		//		queryParams.setFacetQuery("");
-		queryParams.setFacetField("source_id");
+		queryParams.setFq("nickname:每日新闻热点");
+		queryParams.setFacetRange("timestamp");
+		queryParams.setFacetRangeStart("2015-07-10T00:00:00Z");
+		queryParams.setFacetRangeEnd("2015-07-13T00:00:00Z");
+		queryParams.setFacetRangeGap("+1HOUR");
+		//		queryParams.setFacetField("source_id");
 		QueryResult result = search.queryData(queryParams, true);
 		System.out.println(JsonUtils.toJson(result));
 		//		search.deleteQuery("timestamp:[2000-11-27T00:00:00Z TO 2014-09-30T23:59:59Z]");
@@ -299,6 +304,9 @@ public class QueryCore {
 		query.set("q.op", queryParams.getQop());
 		if (queryParams.getFq() != "") {
 			for (String fq : queryParams.getFq().split(";")) {
+				if (fq.isEmpty()) {
+					continue;
+				}
 				if (fq.contains("source_id")) {
 					if (transCacheFq(fq) != "") {
 						query.addFilterQuery(transCacheFq(fq));
@@ -352,6 +360,14 @@ public class QueryCore {
 			for (Entry<String, String> facetDate : queryParams.getFacetDate().entrySet()) {
 				query.set(facetDate.getKey(), facetDate.getValue());
 			}
+		}
+
+		if(queryParams.getFacetRange() != "") {
+			query.setFacet(true);
+			query.set("facet.range", queryParams.getFacetRange());
+			query.set("facet.range.start", queryParams.getFacetRangeStart());
+			query.set("facet.range.end", queryParams.getFacetRangeEnd());
+			query.set("facet.range.gap", queryParams.getFacetRangeGap());
 		}
 
 		return query;
