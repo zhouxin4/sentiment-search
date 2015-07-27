@@ -28,10 +28,15 @@ public class QueryParams implements Cloneable {
 	// 默认，facet=true
 	private HashMap<String, String> facetDate = new HashMap<>();
 
-	private String facetRange = null;
-	private String facetRangeStart = null;
-	private String facetRangeEnd = null;
-	private String facetRangeGap = null;
+	// 范围查询通用字段  added by donglei
+	private String facetRange = "";
+	private String facetRangeStart = "";
+	private String facetRangeEnd = "";
+	private String facetRangeGap = "";
+
+	// 分片搜索标志 added by donglei
+	private String shardName = "";
+	private boolean isShard = false;
 
 	public QueryParams() {
 		//
@@ -45,7 +50,6 @@ public class QueryParams implements Cloneable {
 			params = (QueryParams) super.clone();
 			params.facetDate = (HashMap<String, String>)this.facetDate.clone();
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -195,5 +199,22 @@ public class QueryParams implements Cloneable {
 	public void setFacetRangeGap(String facetRangeGap) {
 		this.facetRangeGap = facetRangeGap;
 	}
+
+	public boolean isShard() {
+		return isShard;
+	}
+
+	public void setShard(boolean isShard) {
+		this.isShard = isShard;
+	}
+
+	public String getShardName() {
+		return shardName;
+	}
+
+	public void setShardName(String shardName) {
+		this.shardName = shardName;
+	}
+
 
 }

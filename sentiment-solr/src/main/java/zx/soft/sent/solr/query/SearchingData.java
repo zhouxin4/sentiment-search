@@ -406,7 +406,7 @@ public class SearchingData {
 			for (String field : queryParams.getFacetField().split(",")) {
 				query.addFacetField(field);
 				query.set("f." + field + ".facet.method", "fcs");
-				query.set("f." + field + ".facet.limit", 15);
+				query.set("f." + field + ".facet.limit", 50);
 			}
 		}
 

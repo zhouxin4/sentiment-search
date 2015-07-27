@@ -15,13 +15,23 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
- * 接口说明：http://192.168.32.16:8912/insight?trueUser=****&***
+ * 接口说明：
+ * 发帖情况分析
+ * http://192.168.32.16:8912/insights?trueUser=34232a86c69edcf1e86f3caefcbed9d6
+ * 倾向分析
+ * http://192.168.32.16:8912/insights/trend?trueUser=34232a86c69edcf1e86f3caefcbed9d6&fq=timestamp:[2015-06-29T13:48:02Z%20TO%202015-07-30T13:48:05Z]
+ * 关系分析
+ * http://192.168.32.16:8912/insights/relation?trueUser=34232a86c69edcf1e86f3caefcbed9d6&fq=timestamp:[2015-06-29T13:48:02Z%20TO%202015-07-30T13:48:05Z]
+ * 关联分析
+ * http://192.168.32.16:8912/insights/query?trueUser=34232a86c69edcf1e86f3caefcbed9d6&fq=timestamp:[2015-06-29T13:48:02Z%20TO%202015-07-30T13:48:05Z]&type=1
+ * 查询接口
+ * http://192.168.32.16:8912/insights/query?trueUser=34232a86c69edcf1e86f3caefcbed9d6&fq=timestamp:[2015-06-29T13:48:02Z%20TO%202015-07-30T13:48:05Z]
  *
  * 运行目录：/home/zxdfs/run-work/api/insights
  * 运行命令：cd sentiment-insights
  *        bin/ctl.sh start insightApiServer
  *
- * @author wanggang
+ * @author donglei
  */
 public class InsightApiServer {
 

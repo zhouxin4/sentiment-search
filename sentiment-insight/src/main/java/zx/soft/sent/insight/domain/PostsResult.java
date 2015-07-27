@@ -20,6 +20,7 @@ public class PostsResult {
 	// 虚拟账号分布图
 	private Map<String, Integer> virtuals = new HashMap<>();
 
+
 	public Map<String, Integer> getVirtuals() {
 		return virtuals;
 	}

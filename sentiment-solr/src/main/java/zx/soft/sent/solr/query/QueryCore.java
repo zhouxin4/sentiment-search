@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
@@ -32,6 +33,8 @@ import zx.soft.sent.solr.ecxception.SpiderSearchException;
 import zx.soft.utils.config.ConfigUtil;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
+import zx.soft.utils.string.StringUtils;
+import zx.soft.utils.threads.AwesomeThreadPool;
 import zx.soft.utils.time.TimeUtils;
 
 /**
@@ -43,6 +46,10 @@ import zx.soft.utils.time.TimeUtils;
 public class QueryCore {
 
 	private static Logger logger = LoggerFactory.getLogger(QueryCore.class);
+
+	public enum Shards {
+		shard1, shard2, shard3, shard4, shard5, shard6
+	};
 
 	final CloudSolrServer cloudServer;
 
@@ -87,6 +94,27 @@ public class QueryCore {
 		System.out.println(JsonUtils.toJson(result));
 		//		search.deleteQuery("timestamp:[2000-11-27T00:00:00Z TO 2014-09-30T23:59:59Z]");
 		search.close();
+	}
+
+	/**
+	 * @author donglei
+	 * 仅用于对大量数据的facet应用
+	 * @param queryParams
+	 * @param isPlatformTrans
+	 * @return
+	 */
+	public List<QueryResult> facetResult(QueryParams queryParams, final boolean isPlatformTrans) {
+		long startTime = System.currentTimeMillis();
+		List<Callable<QueryResult>> calls = new ArrayList<>();
+		queryParams.setShard(true);
+		for (Shards shard : Shards.values()) {
+			final QueryParams tmp = queryParams.clone();
+			tmp.setShardName(shard.name());
+			calls.add(new ShardCallable(tmp, false));
+		}
+		List<QueryResult> queryResults = AwesomeThreadPool.runCallables(6, calls, QueryResult.class);
+		logger.info("多线程请求耗时：" + (System.currentTimeMillis() - startTime));
+		return queryResults;
 	}
 
 	public void deleteQuery(String q) {
@@ -265,7 +293,7 @@ public class QueryCore {
 						break;
 					}
 				} else {
-					if ((t.size() < SentimentConstant.PLATFORM_ARRAY.length) && (temp.getCount() > 0)) {
+					if (temp.getCount() > 0) {
 						t.put(temp.getName(), temp.getCount());
 					} else {
 						break;
@@ -350,9 +378,13 @@ public class QueryCore {
 		}
 		if (queryParams.getFacetField() != "") {
 			//			query.setFacet(true);
-			query.addFacetField(queryParams.getFacetField().split(","));
-			//			query.setFacetLimit(15);
-			//			query.setFacetMinCount(1);
+			//			query.addFacetField(queryParams.getFacetField().split(","));
+			for (String field : queryParams.getFacetField().split(",")) {
+				query.addFacetField(field);
+				query.set("f." + field + ".facet.method", "fcs");
+				query.set("f." + field + ".facet.limit", 50);
+			}
+
 		}
 
 		// 按日期分类查询
@@ -370,10 +402,17 @@ public class QueryCore {
 			query.set("facet.range.gap", queryParams.getFacetRangeGap());
 		}
 
+		if (queryParams.isShard() && !StringUtils.isEmpty(queryParams.getShardName())) {
+			query.set("shards", queryParams.getShardName());
+		}
+
 		return query;
 	}
 
 	private String transCacheFq(String fqs) {
+		if (fqs.contains("AND") || fqs.contains("OR")) {
+			return fqs;
+		}
 		String result = "";
 		String sites = fqs.split(":")[1];
 		if ((sites.indexOf(",") < 0) && (sites.length() == 32)) {
@@ -397,6 +436,9 @@ public class QueryCore {
 	}
 
 	public static String transFq(String fqs) {
+		if (fqs.contains("AND") || fqs.contains("OR")) {
+			return fqs;
+		}
 		int index = fqs.indexOf(":");
 		String result = "";
 		for (String str : fqs.substring(index + 1).split(",")) {
@@ -422,6 +464,35 @@ public class QueryCore {
 	public void close() {
 		cloudServer.shutdown();
 		cache.close();
+	}
+
+	class ShardCallable implements Callable<QueryResult> {
+		private QueryParams params;
+		private boolean isPlatformTrans;
+
+		public ShardCallable(QueryParams params, boolean isPlatformTrans) {
+			this.params = params;
+			this.isPlatformTrans = isPlatformTrans;
+		}
+		@Override
+		public QueryResult call() throws Exception {
+			final SolrQuery query = getSolrQuery(this.params);
+			QueryResponse queryResponse = null;
+			try {
+				queryResponse = cloudServer.query(query, METHOD.POST);
+			} catch (SolrServerException e) {
+				logger.error("Exception:{}", LogbackUtil.expection2Str(e));
+				throw new RuntimeException(e);
+			}
+			if (queryResponse == null) {
+				logger.error("no response!");
+				throw new SpiderSearchException("no response!");
+			}
+			QueryResult result = new QueryResult();
+			logger.info("QTime: " + queryResponse.getQTime());
+			result.setFacetFields(transFacetField(queryResponse.getFacetFields(), this.params, this.isPlatformTrans));
+			return result;
+		}
 	}
 
 }

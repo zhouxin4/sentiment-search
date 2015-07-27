@@ -19,8 +19,8 @@ public class InsightDriver {
 		int exitCode = -1;
 		ProgramDriver pgd = new ProgramDriver();
 		try {
-			// 运行在192.168.31.26机器上
-			// 测试环境： 目录：/home/solr/run-work/api/weibo  端口：8903
+			// 运行在192.168.32.16机器上
+			// 测试环境： 目录：/home/zxdfs/run-work/api/insights  端口：8912
 			pgd.addClass("insightApiServer", InsightApiServer.class, "重点人员发帖趋势接口");
 			pgd.driver(args);
 			// Success

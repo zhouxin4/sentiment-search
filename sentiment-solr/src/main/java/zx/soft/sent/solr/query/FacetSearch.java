@@ -2,14 +2,15 @@ package zx.soft.sent.solr.query;
 
 import java.util.Iterator;
 
-import org.codehaus.jackson.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.sent.solr.domain.FacetDateParams;
 import zx.soft.sent.solr.domain.FacetDateResult;
-import zx.soft.utils.http.HttpUtils;
+import zx.soft.utils.http.HttpClientDaoImpl;
 import zx.soft.utils.json.JsonNodeUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * 分类搜索，目前solrj中对时间分类搜索不支持，搜索不出结果，
@@ -41,7 +42,7 @@ public class FacetSearch {
 	}
 
 	public static String getFacetDateResult(FacetDateParams fdp) {
-		String result = HttpUtils.doGet(getURL(fdp));
+		String result = new HttpClientDaoImpl().doGet(getURL(fdp));
 		return result;
 	}
 
@@ -50,7 +51,7 @@ public class FacetSearch {
 		JsonNode result = JsonNodeUtils.getJsonNode(str, "facet_counts");
 		result = JsonNodeUtils.getJsonNode(result, "facet_dates");
 		result = JsonNodeUtils.getJsonNode(result, fieldName);
-		Iterator<String> keys = result.getFieldNames();
+		Iterator<String> keys = result.fieldNames();
 		String key = "";
 		while (keys.hasNext()) {
 			key = keys.next();

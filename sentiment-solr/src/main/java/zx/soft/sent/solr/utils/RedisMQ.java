@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +16,8 @@ import zx.soft.sent.dao.domain.platform.RecordInfo;
 import zx.soft.utils.config.ConfigUtil;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RedisMQ {
 
@@ -83,8 +84,9 @@ public class RedisMQ {
 			}
 		} finally {
 			// 这里很重要，一旦拿到的jedis实例使用完毕，必须要返还给池中
-			if (jedis != null && jedis.isConnected())
+			if (jedis != null && jedis.isConnected()) {
 				pool.returnResource(jedis);
+			}
 		}
 	}
 
@@ -107,8 +109,9 @@ public class RedisMQ {
 				jedis = null;
 			}
 		} finally {
-			if (jedis != null && jedis.isConnected())
+			if (jedis != null && jedis.isConnected()) {
 				pool.returnResource(jedis);
+			}
 		}
 		return result;
 	}
@@ -137,8 +140,9 @@ public class RedisMQ {
 				jedis = null;
 			}
 		} finally {
-			if (jedis != null && jedis.isConnected())
+			if (jedis != null && jedis.isConnected()) {
 				pool.returnResource(jedis);
+			}
 		}
 		return records;
 	}

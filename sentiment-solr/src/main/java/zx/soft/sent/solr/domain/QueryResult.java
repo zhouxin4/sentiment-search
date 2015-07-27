@@ -19,10 +19,7 @@ import org.apache.solr.common.util.NamedList;
 @SuppressWarnings("rawtypes")
 public class QueryResult {
 
-	/**
-	 *  added by donglei
-	 *  多线程的标志
-	 */
+	// 多线程的标志 added by donglei
 	private String tag;
 
 	private long numFound;
