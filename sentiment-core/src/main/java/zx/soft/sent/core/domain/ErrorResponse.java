@@ -1,4 +1,4 @@
-package zx.soft.sent.web.domain;
+package zx.soft.sent.core.domain;
 
 import java.io.Serializable;
 

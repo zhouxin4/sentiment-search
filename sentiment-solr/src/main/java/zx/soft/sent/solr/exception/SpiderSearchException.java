@@ -1,4 +1,4 @@
-package zx.soft.sent.solr.ecxception;
+package zx.soft.sent.solr.exception;
 
 /**
  * 舆情搜索异常处理

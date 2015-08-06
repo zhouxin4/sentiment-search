@@ -9,10 +9,10 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.solr.domain.QueryParams;
+import zx.soft.sent.core.domain.ErrorResponse;
+import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.web.application.SentiSearchApplication;
-import zx.soft.sent.web.domain.ErrorResponse;
 import zx.soft.utils.codec.URLCodecUtils;
 
 /**

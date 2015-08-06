@@ -1,4 +1,4 @@
-package zx.soft.sent.solr.domain;
+package zx.soft.sent.core.domain;
 
 import java.util.HashMap;
 

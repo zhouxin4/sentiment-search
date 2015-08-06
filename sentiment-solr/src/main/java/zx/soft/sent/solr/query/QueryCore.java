@@ -25,14 +25,15 @@ import org.slf4j.LoggerFactory;
 import zx.soft.redis.client.cache.Cache;
 import zx.soft.redis.client.cache.RedisCache;
 import zx.soft.redis.client.common.Config;
+import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.dao.common.SentimentConstant;
-import zx.soft.sent.solr.domain.QueryParams;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.domain.SimpleFacetInfo;
-import zx.soft.sent.solr.ecxception.SpiderSearchException;
+import zx.soft.sent.solr.exception.SpiderSearchException;
 import zx.soft.utils.config.ConfigUtil;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
+import zx.soft.utils.regex.RegexUtils;
 import zx.soft.utils.string.StringUtils;
 import zx.soft.utils.threads.AwesomeThreadPool;
 import zx.soft.utils.time.TimeUtils;
@@ -73,7 +74,7 @@ public class QueryCore {
 		QueryCore search = new QueryCore();
 		QueryParams queryParams = new QueryParams();
 		// q:关键词
-		queryParams.setQ("*:*");
+		queryParams.setQ("\"利益\" OR \"财富\" OR \"资源\" OR \"垄断\" OR \"独占\"");
 		//		queryParams.setFq("source_id:607202e6603cb23b3d3173d4ca20a886");
 		//timestamp:[2014-04-22T00:00:00Z TO 2014-04-23T00:00:00Z]
 		//		queryParams.setSort("timestamp:desc"); // lasttime:desc
@@ -84,11 +85,13 @@ public class QueryCore {
 		//		queryParams.setHlfl("title,content");
 		//		queryParams.setHlsimple("red");
 		//		queryParams.setFacetQuery("");
-		queryParams.setFq("nickname:每日新闻热点");
-		queryParams.setFacetRange("timestamp");
-		queryParams.setFacetRangeStart("2015-07-10T00:00:00Z");
-		queryParams.setFacetRangeEnd("2015-07-13T00:00:00Z");
-		queryParams.setFacetRangeGap("+1HOUR");
+		queryParams
+				.setFq("timestamp:[2015-06-29T13:48:02Z TO 2015-07-30T13:48:05Z];"
+						+ "(nickname:湖南株洲炎陵艾琼娜 AND source_id:7) OR (nickname:王章义桐城渔夫 AND source_id:7) OR (nickname:ZAKER新闻频道 AND source_id:7) OR (nickname:梦想成真的花儿 AND source_id:7) OR (nickname:内涵冷笑话 AND source_id:8) OR (nickname:绝不放弃 AND source_id:8) OR (nickname:关树学 AND source_id:8) OR (nickname:漠然 AND source_id:8) OR (nickname:刷淘宝信誉先刷后付款点我 AND source_id:8)");
+		//		queryParams.setFacetRange("timestamp");
+		//		queryParams.setFacetRangeStart("2015-07-10T00:00:00Z");
+		//		queryParams.setFacetRangeEnd("2015-07-13T00:00:00Z");
+		//		queryParams.setFacetRangeGap("+1HOUR");
 		//		queryParams.setFacetField("source_id");
 		QueryResult result = search.queryData(queryParams, true);
 		System.out.println(JsonUtils.toJson(result));
@@ -112,7 +115,7 @@ public class QueryCore {
 			tmp.setShardName(shard.name());
 			calls.add(new ShardCallable(tmp, false));
 		}
-		List<QueryResult> queryResults = AwesomeThreadPool.runCallables(6, calls, QueryResult.class);
+		List<QueryResult> queryResults = AwesomeThreadPool.runCallables(6, calls);
 		logger.info("多线程请求耗时：" + (System.currentTimeMillis() - startTime));
 		return queryResults;
 	}
@@ -347,7 +350,19 @@ public class QueryCore {
 			}
 		}
 		if (queryParams.getSort() != "") {
-			for (String sort : queryParams.getSort().split(",")) {
+			String sortStr = queryParams.getSort();
+			List<String> funcs = RegexUtils.findMatchStrs(sortStr, "\\(.*\\)", true);
+			int i = 0;
+			for (String func : funcs) {
+				sortStr = sortStr.replace(func, "(" + i + ")");
+				i++;
+			}
+			for (String sort : sortStr.split(",")) {
+				List<String> parterns = RegexUtils.findMatchStrs(sort, "\\((\\d+)\\)", false);
+				if(!parterns.isEmpty()) {
+					int tmp = Integer.parseInt(parterns.get(0));
+					sort = sort.replaceAll("\\(" + parterns.get(0) + "\\)", funcs.get(tmp));
+				}
 				query.addSort(sort.split(":")[0], "desc".equalsIgnoreCase(sort.split(":")[1]) ? ORDER.desc : ORDER.asc);
 			}
 		}

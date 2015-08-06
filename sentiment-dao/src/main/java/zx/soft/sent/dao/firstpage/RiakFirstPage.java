@@ -3,7 +3,7 @@ package zx.soft.sent.dao.firstpage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.dao.riak.RiakInstance;
+import zx.soft.sent.core.riak.RiakInstance;
 import zx.soft.utils.log.LogbackUtil;
 
 import com.basho.riak.client.core.query.RiakObject;

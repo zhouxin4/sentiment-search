@@ -1,4 +1,4 @@
-package zx.soft.sent.insight.domain;
+package zx.soft.sent.solr.insight;
 
 import com.google.common.base.MoreObjects;
 

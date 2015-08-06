@@ -26,7 +26,7 @@ public class QueryResult {
 	// Direct pointers to known types
 	private int QTime;
 	private NamedList<Object> header = null;
-	private SolrDocumentList results = null;
+	private SolrDocumentList results = new SolrDocumentList();
 	private NamedList<ArrayList> sort = null;
 
 	private Map<String, Map<String, List<String>>> highlighting = null;

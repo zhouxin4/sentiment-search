@@ -3,9 +3,9 @@ package zx.soft.sent.solr.allinternet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.dao.allinternet.AllInternet;
 import zx.soft.sent.dao.domain.allinternet.InternetTask;
-import zx.soft.sent.solr.domain.QueryParams;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.query.SearchingData;
 import zx.soft.utils.log.LogbackUtil;

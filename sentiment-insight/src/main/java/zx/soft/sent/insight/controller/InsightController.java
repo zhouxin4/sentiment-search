@@ -12,9 +12,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import zx.soft.sent.insight.domain.ErrorResponse;
+import zx.soft.sent.core.domain.ErrorResponse;
+import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.insight.service.InsightService;
-import zx.soft.sent.solr.domain.QueryParams;
+import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.time.TimeUtils;
 
@@ -74,7 +75,6 @@ public class InsightController {
 		QueryParams queryParams = new QueryParams();
 		queryParams.setQ(request.getParameter("q") == null ? "*:*" : request.getParameter("q"));
 		queryParams.setFq(request.getParameter("fq") == null ? "" : request.getParameter("fq"));
-		queryParams.setRows(0);
 		queryParams.setQop("OR");
 		logger.info(queryParams.toString());
 		return indexService.getTrendInfos(queryParams, nickname);
@@ -101,6 +101,11 @@ public class InsightController {
 		int type = request.getParameter("type") == null ? 0 : Integer.parseInt(request.getParameter("type"));
 		if (type == 1) {
 			return indexService.getRelatedData(queryParams, nickname);
+		} else if (type == 2) {
+			queryParams.setSort("sum(comment_count,repost_count):desc," + queryParams.getSort());
+			QueryResult result = indexService.queryData(queryParams, nickname);
+			result.setNumFound(result.getNumFound() > 200 ? 200 : result.getNumFound());
+			return result;
 		}
 		return indexService.queryData(queryParams, nickname);
 	}

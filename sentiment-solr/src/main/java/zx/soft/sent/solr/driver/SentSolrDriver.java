@@ -3,6 +3,7 @@ package zx.soft.sent.solr.driver;
 import zx.soft.sent.solr.allinternet.TaskUpdate;
 import zx.soft.sent.solr.firstpage.FirstPageRun;
 import zx.soft.sent.solr.index.ImportRedisToSC;
+import zx.soft.sent.solr.insight.InsightHotKey;
 import zx.soft.sent.solr.query.OracleToRedis;
 import zx.soft.sent.solr.query.RemoveRedisReplicationData;
 import zx.soft.sent.solr.query.RemoveSentiData;
@@ -42,6 +43,8 @@ public class SentSolrDriver {
 			pgd.addClass("removeRedisReplicationData", RemoveRedisReplicationData.class, "定时清理Redis去重数据");
 			// 在hefei10机器上运行
 			pgd.addClass("taskUpdate", TaskUpdate.class, "全网任务信息查询结果存储缓存信息");
+			// 在hefei06机器上运行
+			pgd.addClass("insightHotKey", InsightHotKey.class, "分时段对所有重点人员计算热门关键词");
 			pgd.driver(args);
 			// Success
 			exitCode = 0;

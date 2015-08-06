@@ -1,4 +1,4 @@
-package zx.soft.sent.core.persist;
+package zx.soft.sent.dao.persist;
 
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +15,7 @@ import zx.soft.utils.threads.ApplyThreadPool;
 
 /**
  * 持久化到Mysql
- * 
+ *
  * @author wanggang
  *
  */

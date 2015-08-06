@@ -1,4 +1,4 @@
-package zx.soft.sent.core.persist;
+package zx.soft.sent.dao.persist;
 
 import java.util.Date;
 

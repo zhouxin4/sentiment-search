@@ -1,4 +1,4 @@
-package zx.soft.sent.insight.domain;
+package zx.soft.sent.solr.insight;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,13 +92,7 @@ public class Virtuals implements Cloneable {
 
 	public static class Virtual implements Cloneable {
 		/**
-		 * {"virtualId":7,
-		 * "trueUserId":"159b6a505277b6f39655cbfcb83a84b4",
-		 * "virtualUserAccount":"阿什顿",
-		 * "webType":"3",
-		 * "webName":"腾讯微博",
-		 * "webSourceId":8,
-		 * "lasttime":"2015-07-15 10:04:04.0"}
+		private String virtualUserUrl;
 		 */
 
 		@JsonProperty("virtualId")
@@ -109,6 +103,9 @@ public class Virtuals implements Cloneable {
 
 		@JsonProperty("virtualUserAccount")
 		private String nickname;
+
+		@JsonProperty("virtualUserUrl")
+		private String url;
 
 		@JsonProperty("webType")
 		private int platform;
@@ -205,6 +202,14 @@ public class Virtuals implements Cloneable {
 
 		public void setLasttime(String lasttime) {
 			this.lasttime = lasttime;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
 		}
 
 	}

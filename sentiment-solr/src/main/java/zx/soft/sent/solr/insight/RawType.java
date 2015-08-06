@@ -1,4 +1,4 @@
-package zx.soft.sent.insight.domain;
+package zx.soft.sent.solr.insight;
 
 import java.util.HashMap;
 import java.util.Map;

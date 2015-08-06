@@ -1,4 +1,4 @@
-package zx.soft.sent.dao.riak;
+package zx.soft.sent.core.riak;
 
 import java.net.UnknownHostException;
 import java.util.Arrays;

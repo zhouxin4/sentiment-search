@@ -6,70 +6,80 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+
+import zx.soft.utils.string.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.primitives.Longs;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
+import com.google.common.primitives.Ints;
 
 public class TrendResult {
 	private Map<String, Long> trends = new HashMap<>();
-	private List<Map.Entry<String, Long>> sortedhotKeys = new ArrayList<>();
+	private List<Map.Entry<String, Integer>> sortedhotKeys = new ArrayList<>();
 	@JsonIgnore
-	private Map<String, Long> hotkeys = new HashMap<>();
+	private Multiset<String> hotkeys = HashMultiset.create();
 
-	public Map<String, Long> getTrends() {
-		return trends;
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(TrendResult.class).add("trends", trends).add("sortedhotKeys", sortedhotKeys)
+				.toString();
 	}
 
 	public void setTrends(Map<String, Long> trends) {
 		this.trends = trends;
 	}
 
-	public List<Map.Entry<String, Long>> getSortedhotKeys() {
+	public List<Map.Entry<String, Integer>> getSortedhotKeys() {
 		return sortedhotKeys;
 	}
 
-	public void setSortedhotKeys(List<Map.Entry<String, Long>> sortedhotKeys) {
+	public void setSortedhotKeys(List<Map.Entry<String, Integer>> sortedhotKeys) {
 		this.sortedhotKeys = sortedhotKeys;
 	}
 
-	public Map<String, Long> getHotkeys() {
-		return hotkeys;
+	public Map<String, Long> getTrends() {
+		return trends;
 	}
 
-	public void setHotkeys(Map<String, Long> hotkeys) {
-		this.hotkeys = hotkeys;
-	}
-
-	private void countMapItem(Map<String, Long> maps, String key, long value) {
+	public void countTrend(String key, long value) {
 		Preconditions.checkArgument(!key.isEmpty());
-		if (maps.containsKey(key)) {
-			maps.put(key, maps.get(key) + value);
+		if (trends.containsKey(key)) {
+			trends.put(key, trends.get(key) + value);
 		} else {
-			maps.put(key, value);
+			trends.put(key, value);
 		}
 	}
 
-	public void addItem(String key, long value) {
-		Preconditions.checkNotNull(key);
-		String tmp[] = key.split("##");
-		Preconditions.checkArgument(tmp.length == 2);
-		countMapItem(trends, tmp[0], value);
-		countMapItem(hotkeys, tmp[1], value);
+	public void countHotWords(String key, int count) {
+		if (!StringUtils.isEmpty(key)) {
+			hotkeys.add(key, count);
+		}
 	}
 
 	public void sortHotKeys() {
-		for (Entry<String, Long> entry : hotkeys.entrySet()) {
-			sortedhotKeys.add(entry);
+		Map<String, Integer> counts = Maps.newHashMap();
+
+		for (Entry<String> entry : hotkeys.entrySet()) {
+			counts.put(entry.getElement(), entry.getCount());
 		}
-		Collections.sort(sortedhotKeys, new Comparator<Entry<String, Long>>() {
+		for (Map.Entry<String, Integer> keyvalue : counts.entrySet()) {
+			sortedhotKeys.add(keyvalue);
+		}
+		Collections.sort(sortedhotKeys, new Comparator<Map.Entry<String, Integer>>() {
 
 			@Override
-			public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
-				return -Longs.compare(o1.getValue(), o2.getValue());
+			public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+				return -Ints.compare(o1.getValue(), o2.getValue());
 			}
 		});
+		if (sortedhotKeys.size() > 20) {
+			this.sortedhotKeys = sortedhotKeys.subList(0, 20);
+		}
 	}
 
 

@@ -1,4 +1,4 @@
-package zx.soft.sent.api.domain;
+package zx.soft.sent.core.domain;
 
 import java.io.Serializable;
 import java.util.ArrayList;

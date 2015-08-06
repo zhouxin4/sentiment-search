@@ -8,12 +8,12 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.dao.common.MybatisConfig;
 import zx.soft.sent.dao.domain.special.SpecialTopic;
 import zx.soft.sent.dao.special.SpecialQuery;
 import zx.soft.sent.solr.domain.FacetDateParams;
 import zx.soft.sent.solr.domain.FacetDateResult;
-import zx.soft.sent.solr.domain.QueryParams;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.domain.SimpleFacetInfo;
 import zx.soft.sent.solr.query.FacetSearch;

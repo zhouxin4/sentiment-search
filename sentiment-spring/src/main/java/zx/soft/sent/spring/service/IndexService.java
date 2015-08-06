@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import zx.soft.sent.core.persist.PersistCore;
 import zx.soft.sent.dao.domain.platform.RecordInfo;
+import zx.soft.sent.dao.persist.PersistCore;
 import zx.soft.sent.solr.utils.RedisMQ;
 import zx.soft.sent.spring.domain.ErrorResponse;
 import zx.soft.sent.spring.domain.ErrorResponse.Builder;

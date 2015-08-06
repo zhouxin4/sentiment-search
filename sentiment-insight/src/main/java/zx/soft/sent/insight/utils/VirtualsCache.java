@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import zx.soft.sent.insight.domain.UserDomain;
-import zx.soft.sent.insight.domain.Virtuals;
-import zx.soft.sent.insight.domain.Virtuals.Virtual;
+import zx.soft.sent.solr.insight.UserDomain;
+import zx.soft.sent.solr.insight.Virtuals;
+import zx.soft.sent.solr.insight.Virtuals.Virtual;
 
 public class VirtualsCache {
 
