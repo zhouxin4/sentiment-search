@@ -295,12 +295,16 @@ public class InsightService {
 		PostsResult postsResults = new PostsResult();
 		// 初始化postResult
 		String fq = params.getFq();
+		int platform = -1;
 		int source_id = -1;
-		if (fq.contains("source_id")) {
+		if (fq.contains("source_id") || fq.contains("platform")) {
 			for (String sp : fq.split(";")) {
 				if (sp.contains("source_id")) {
 					source_id = Integer.parseInt(sp.split(":")[1]);
 					postsResults.addDistIterm(source_id + "", 0);
+				}
+				if (sp.contains("platform")) {
+					platform = Integer.parseInt(sp.split(":")[1]);
 				}
 			}
 		}
@@ -325,7 +329,10 @@ public class InsightService {
 		List<Callable<QueryResult>> calls = new ArrayList<>();
 
 		for (final Virtual virtual : virtuals) {
-			if (source_id != -1 && virtual.getSource_id() != source_id) {
+			if (platform != -1 && platform != virtual.getPlatform()) {
+				continue;
+			}
+			if (source_id != -1 && source_id != virtual.getSource_id()) {
 				continue;
 			}
 			final QueryParams tmp = params.clone();
