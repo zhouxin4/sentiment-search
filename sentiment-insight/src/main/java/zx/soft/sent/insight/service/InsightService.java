@@ -2,6 +2,7 @@ package zx.soft.sent.insight.service;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -48,6 +49,8 @@ import zx.soft.utils.threads.AwesomeThreadPool;
 import zx.soft.utils.time.TimeUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.primitives.Longs;
@@ -83,12 +86,13 @@ public class InsightService {
 
 	private Map<String, Long> getRelatedNickname(QueryParams params, String nickname) {
 		long start = System.currentTimeMillis();
-		List<Virtual> virtuals = getVirtuals(nickname);
-		RawType util = new RawType();
+		Collection<Virtual> virtuals = getVirtuals(nickname);
+		virtuals = Collections2.filter(virtuals, new VirtualPredicate(params.getFq()));
+		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
 		for (Virtual virtual : virtuals) {
-			util.addQueryParam("fq", "\"" + virtual.getNickname() + "\"");
+			helper.add("\"" + virtual.getNickname() + "\"");
 		}
-		params.setFq(params.getFq() + ";" + "content:(" + util.getQueryParams().get("fq") + ")");
+		params.setFq(params.getFq() + ";" + "content:(" + helper.getString() + ")");
 		params.setFacetField("nickname");
 		params.setShard(true);
 		List<Callable<QueryResult>> calls = new ArrayList<>();
@@ -99,6 +103,7 @@ public class InsightService {
 		}
 		List<QueryResult> results = AwesomeThreadPool.runCallables(6, calls);
 
+		RawType util = new RawType();
 		for (QueryResult result : results) {
 			for (SimpleFacetInfo facetInfo : result.getFacetFields()) {
 				if ("nickname".equals(facetInfo.getName())) {
@@ -163,12 +168,11 @@ public class InsightService {
 		if (virtuals.isEmpty()) {
 			return new QueryResult();
 		}
-		RawType fq = new RawType();
+		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
 		for (Virtual virtual : virtuals) {
-			fq.addQueryParam("fq", "(nickname:" + virtual.getNickname() + " AND source_id:" + virtual.getSource_id()
-					+ ")");
+			helper.add("(nickname:\"" + virtual.getNickname() + "\" AND source_id:" + virtual.getSource_id() + ")");
 		}
-		params.setFq(params.getFq() + ";" + fq.getQueryParams().get("fq"));
+		params.setFq(params.getFq() + ";" + helper.getString());
 		return core.queryData(params, false);
 	}
 
@@ -189,6 +193,12 @@ public class InsightService {
 		}
 		helper.add("\"" + trueUserInfo.getUserName() + "\"");
 		params.setFq(params.getFq() + ";content:(" + helper.getString() + ")");
+		// 添加关联分析中重点人员昵称标红
+		//		if ("*:*".equals(params.getQ())) {
+		//			params.setQ("content:(" + helper.getString() + ")");
+		//		} else {
+		//			params.setQ("(" + params.getQ() + ") AND content:(" + helper.getString() + ")");
+		//		}
 		return core.queryData(params, false);
 	}
 
@@ -224,7 +234,8 @@ public class InsightService {
 				int i = 0;
 				StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
 				for (Virtual virtual : virtuals) {
-					helper.add("(nickname:" + virtual.getNickname() + " AND source_id:" + virtual.getSource_id() + ")");
+					helper.add("(nickname:\"" + virtual.getNickname() + "\" AND source_id:" + virtual.getSource_id()
+							+ ")");
 					i++;
 					if (i == 8) {
 						fqs.add(helper.getString());
@@ -260,11 +271,7 @@ public class InsightService {
 				for (QueryResult queryResult : queryResults) {
 					trendResult.countTrend(queryResult.getTag(), queryResult.getNumFound());
 				}
-				List<KeyValue<String, Long>> keyValues = TopN.topNOnValue(trendResult.getTrends(), 6);
-				trendResult.getTrends().clear();
-				for (KeyValue<String, Long> keyValue : keyValues) {
-					trendResult.countTrend(keyValue.getKey(), keyValue.getValue());
-				}
+
 				return trendResult;
 			}
 		};
@@ -282,8 +289,10 @@ public class InsightService {
 		} catch (InterruptedException | ExecutionException e) {
 			logger.error(e.getMessage());
 		}
-
-		hotkey.setTrends(trend.getTrends());
+		List<KeyValue<String, Long>> topNTrends = TopN.topNOnValue(trend.getTrends(), 6);
+		for (KeyValue<String, Long> keyValue : topNTrends) {
+			hotkey.countTrend(keyValue.getKey(), keyValue.getValue());
+		}
 		logger.info("获得倾向信息耗时: {}ms", System.currentTimeMillis() - start);
 
 		return hotkey;
@@ -340,7 +349,7 @@ public class InsightService {
 				logger.error("Error throwed when Object cloned");
 				continue;
 			}
-			tmp.setFq(tmp.getFq() + ";nickname:" + virtual.getNickname() + ";source_id:" + virtual.getSource_id());
+			tmp.setFq(tmp.getFq() + ";nickname:\"" + virtual.getNickname() + "\";source_id:" + virtual.getSource_id());
 			calls.add(new MyCallable(virtual.getSource_id() + "", tmp));
 		}
 		if (calls.isEmpty()) {
@@ -499,6 +508,37 @@ public class InsightService {
 				}
 			}
 			return new HashMap<>();
+		}
+
+	}
+
+	public class VirtualPredicate implements Predicate<Virtual> {
+
+		private int platform = -1;
+		private int source_id = -1;
+
+		public VirtualPredicate(String fq) {
+			if (fq.contains("source_id") || fq.contains("platform")) {
+				for (String sp : fq.split(";")) {
+					if (sp.contains("source_id")) {
+						source_id = Integer.parseInt(sp.split(":")[1]);
+					}
+					if (sp.contains("platform")) {
+						platform = Integer.parseInt(sp.split(":")[1]);
+					}
+				}
+			}
+		}
+
+		@Override
+		public boolean apply(Virtual virtual) {
+			if (platform != -1 && platform != virtual.getPlatform()) {
+				return false;
+			}
+			if (source_id != -1 && source_id != virtual.getSource_id()) {
+				return false;
+			}
+			return true;
 		}
 
 	}

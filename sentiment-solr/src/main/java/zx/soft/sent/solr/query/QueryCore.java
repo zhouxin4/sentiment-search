@@ -412,9 +412,9 @@ public class QueryCore {
 		if(queryParams.getFacetRange() != "") {
 			query.setFacet(true);
 			query.set("facet.range", queryParams.getFacetRange());
-			query.set("facet.range.start", queryParams.getFacetRangeStart());
-			query.set("facet.range.end", queryParams.getFacetRangeEnd());
-			query.set("facet.range.gap", queryParams.getFacetRangeGap());
+			query.set("f." + queryParams.getFacetRange() + ".facet.range.start", queryParams.getFacetRangeStart());
+			query.set("f." + queryParams.getFacetRange() + ".facet.range.end", queryParams.getFacetRangeEnd());
+			query.set("f." + queryParams.getFacetRange() + ".facet.range.gap", queryParams.getFacetRangeGap());
 		}
 
 		if (queryParams.isShard() && !StringUtils.isEmpty(queryParams.getShardName())) {

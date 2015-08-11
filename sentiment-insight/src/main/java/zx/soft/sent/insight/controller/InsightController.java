@@ -1,5 +1,7 @@
 package zx.soft.sent.insight.controller;
 
+import java.text.ParseException;
+
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
@@ -49,12 +51,21 @@ public class InsightController {
 		queryParams.setRows(0);
 		queryParams.setFacetRange(request.getParameter("facetRange") == null ? "timestamp" : request
 				.getParameter("facetRange"));
-		long sys = System.currentTimeMillis();
-		long startTime = TimeUtils.getMidnight(sys, -6);
-		queryParams.setFacetRangeStart(request.getParameter("facetRangeStart") == null ? TimeUtils
-				.transToSolrDateStr(startTime) : request.getParameter("facetRangeStart"));
-		queryParams.setFacetRangeEnd(request.getParameter("facetRangeEnd") == null ? TimeUtils.transToSolrDateStr(sys)
-				: request.getParameter("facetRangeEnd"));
+
+		long endTime = System.currentTimeMillis();
+		long startTime = TimeUtils.transCurrentTime(endTime, 0, 0, -7, 0);
+		try {
+			endTime = request.getParameter("facetRangeEnd") == null ? endTime : TimeUtils
+					.tranSolrDateStrToMilli(request.getParameter("facetRangeEnd"));
+			startTime = request.getParameter("facetRangeStart") == null ? startTime : TimeUtils
+					.tranSolrDateStrToMilli(request.getParameter("facetRangeStart"));
+		} catch (ParseException e) {
+			logger.info("请求参数时间格式不对!");
+		}
+		queryParams.setFq(queryParams.getFq() + ";timestamp:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
+				+ TimeUtils.transToSolrDateStr(endTime) + "]");
+		queryParams.setFacetRangeStart(TimeUtils.transToSolrDateStr(TimeUtils.getZeroHourTime(startTime)));
+		queryParams.setFacetRangeEnd(TimeUtils.transToSolrDateStr(endTime));
 		queryParams.setFacetRangeGap(request.getParameter("facetRangeGap") == null ? "+1HOUR" : request
 				.getParameter("facetRangeGap"));
 
