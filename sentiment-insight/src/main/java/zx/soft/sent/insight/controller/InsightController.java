@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import zx.soft.sent.core.domain.ErrorResponse;
 import zx.soft.sent.core.domain.QueryParams;
-import zx.soft.sent.insight.service.InsightService;
+import zx.soft.sent.insight.service.PostService;
+import zx.soft.sent.insight.service.QueryService;
+import zx.soft.sent.insight.service.RelationService;
+import zx.soft.sent.insight.service.TrendService;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.time.TimeUtils;
@@ -34,7 +37,13 @@ public class InsightController {
 	Logger logger = LoggerFactory.getLogger(InsightController.class);
 
 	@Inject
-	private InsightService indexService;
+	private PostService postService;
+	@Inject
+	private QueryService queryService;
+	@Inject
+	private RelationService relationService;
+	@Inject
+	private TrendService trendService;
 
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseStatus(HttpStatus.CREATED)
@@ -70,7 +79,7 @@ public class InsightController {
 				.getParameter("facetRangeGap"));
 
 		logger.info(queryParams.toString());
-		return indexService.getNicknamePostInfos(queryParams, nickname);
+		return postService.getNicknamePostInfos(queryParams, nickname);
 	}
 
 	@RequestMapping(value = "/trend", method = RequestMethod.GET)
@@ -88,7 +97,7 @@ public class InsightController {
 		queryParams.setFq(request.getParameter("fq") == null ? "" : request.getParameter("fq"));
 		queryParams.setQop("OR");
 		logger.info(queryParams.toString());
-		return indexService.getTrendInfos(queryParams, nickname);
+		return trendService.getTrendInfos(queryParams, nickname);
 	}
 
 	@RequestMapping(value = "/query", method = RequestMethod.GET)
@@ -111,14 +120,14 @@ public class InsightController {
 		logger.info(queryParams.toString());
 		int type = request.getParameter("type") == null ? 0 : Integer.parseInt(request.getParameter("type"));
 		if (type == 1) {
-			return indexService.getRelatedData(queryParams, nickname);
+			return queryService.getRelatedData(queryParams, nickname);
 		} else if (type == 2) {
 			queryParams.setSort("sum(comment_count,repost_count):desc," + queryParams.getSort());
-			QueryResult result = indexService.queryData(queryParams, nickname);
+			QueryResult result = queryService.queryData(queryParams, nickname);
 			result.setNumFound(result.getNumFound() > 200 ? 200 : result.getNumFound());
 			return result;
 		}
-		return indexService.queryData(queryParams, nickname);
+		return queryService.queryData(queryParams, nickname);
 	}
 
 	@RequestMapping(value = "/relation", method = RequestMethod.GET)
@@ -134,7 +143,7 @@ public class InsightController {
 		queryParams.setFq(request.getParameter("fq") == null ? "" : request.getParameter("fq"));
 		queryParams.setQop("OR");
 		logger.info(queryParams.toString());
-		return indexService.relationAnalysed(queryParams, nickname);
+		return relationService.relationAnalysed(queryParams, nickname);
 	}
 
 }

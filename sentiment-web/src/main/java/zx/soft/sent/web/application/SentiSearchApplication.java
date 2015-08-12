@@ -20,7 +20,7 @@ public class SentiSearchApplication extends Application {
 	private final QueryCore queryCore;
 
 	public SentiSearchApplication() {
-		queryCore = new QueryCore();
+		queryCore = QueryCore.getInstance();
 	}
 
 	@Override

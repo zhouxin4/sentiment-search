@@ -24,7 +24,7 @@ public class StaticDemo {
 		long threeOld = startTime - 3 * 24 * 60 * 60 * 1000;
 		String fq = "timestamp:[" + TimeUtils.transToSolrDateStr(threeOld) + " TO "
 				+ TimeUtils.transToSolrDateStr(startTime) + "]";
-		QueryCore core = new QueryCore();
+		QueryCore core = QueryCore.getInstance();
 		SolrQuery query = new SolrQuery();
 		query.set("q", "*:*");
 		query.addFilterQuery(fq);

@@ -44,11 +44,6 @@ public class InsightHotKey {
 	public static final String VIRTUAL_URL = "http://192.168.32.20:8080/keyusers/virtualUser";
 	public static final String TRUE_USER = "http://192.168.32.20:8080/keyusers/trueUser/";
 
-	private static QueryCore core = null;
-	static {
-		core = new QueryCore();
-	}
-
 	public InsightHotKey() {
 		//
 	}
@@ -89,7 +84,7 @@ public class InsightHotKey {
 		}
 		// 关闭资源
 		insight.close();
-		core.close();
+		QueryCore.getInstance().close();
 		logger.info("Finishing query OA-FirstPage data...");
 	}
 
@@ -112,13 +107,13 @@ public class InsightHotKey {
 		}
 		params.setFq(params.getFq() + ";" + postsResult.getQueryParams().get("fq"));
 		params.setRows(200);
-		QueryResult result = core.queryData(params, false);
+		QueryResult result = QueryCore.getInstance().queryData(params, false);
 		countHotKeys(result, counts);
 		long numFound = result.getNumFound() > 10000 ? 10000 : result.getNumFound();
 		for (int i = 200; i < numFound; i += 200) {
 			params.setStart(i);
 			params.setRows(200);
-			result = core.queryData(params, false);
+			result = QueryCore.getInstance().queryData(params, false);
 			countHotKeys(result, counts);
 		}
 		return counts;

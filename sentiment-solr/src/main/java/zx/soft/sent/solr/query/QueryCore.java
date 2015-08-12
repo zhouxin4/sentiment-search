@@ -52,11 +52,13 @@ public class QueryCore {
 		shard1, shard2, shard3, shard4, shard5, shard6
 	};
 
-	final CloudSolrServer cloudServer;
+	private final CloudSolrServer cloudServer;
 
-	final Cache cache;
+	private final Cache cache;
 
-	public QueryCore() {
+	private static QueryCore core = new QueryCore();
+
+	private QueryCore() {
 		cache = new RedisCache(Config.get("redis.rp.slave"), Integer.parseInt(Config.get("redis.rp.port")),
 				Config.get("redis.password"));
 		Properties props = ConfigUtil.getProps("solr_params.properties");
@@ -65,6 +67,10 @@ public class QueryCore {
 		cloudServer.setZkConnectTimeout(Integer.parseInt(props.getProperty("zookeeper_connect_timeout")));
 		cloudServer.setZkClientTimeout(Integer.parseInt(props.getProperty("zookeeper_client_timeout")));
 		cloudServer.connect();
+	}
+
+	public static QueryCore getInstance() {
+		return core;
 	}
 
 	/**
