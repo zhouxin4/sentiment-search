@@ -90,6 +90,7 @@ public class TrendService {
 						helper.clear();
 					}
 				}
+				fqs.add(helper.getString());
 
 				List<Callable<QueryResult>> calls = new ArrayList<>();
 				List<Group> groups = TrueUserHelper.getTrendGroup(nickname);

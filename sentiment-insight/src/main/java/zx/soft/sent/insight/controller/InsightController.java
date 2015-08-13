@@ -62,7 +62,8 @@ public class InsightController {
 				.getParameter("facetRange"));
 
 		long endTime = System.currentTimeMillis();
-		long startTime = TimeUtils.transCurrentTime(endTime, 0, 0, -7, 0);
+		//		long startTime = TimeUtils.transCurrentTime(endTime, 0, 0, -7, 0);
+		long startTime = TimeUtils.getMidnight(endTime, -6);
 		try {
 			endTime = request.getParameter("facetRangeEnd") == null ? endTime : TimeUtils
 					.tranSolrDateStrToMilli(request.getParameter("facetRangeEnd"));

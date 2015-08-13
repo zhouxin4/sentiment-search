@@ -70,7 +70,7 @@ public class InsightHotKey {
 			List<UserDomain> trueUsers = getTrueUser(areaCode);
 			for (UserDomain user : trueUsers) {
 				String trueUserId = user.getTureUserId();
-				for (int i = 0; i < 2; i++) {
+				for (int i = 0; i < 720; i++) {
 					long hours = TimeUtils.transCurrentTime(current, 0, 0, 0, -i);
 					Multiset<String> counts = getOneDayHotKeys(trueUserId, hours);
 					Map<String, Integer> hotKeys = getTopNHotKey(counts, 20);

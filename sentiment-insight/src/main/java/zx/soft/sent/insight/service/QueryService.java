@@ -1,5 +1,6 @@
 package zx.soft.sent.insight.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -14,6 +15,8 @@ import zx.soft.sent.solr.insight.Virtuals.Virtual;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.string.ConcatMethod;
 import zx.soft.utils.string.StringConcatHelper;
+
+import com.google.common.collect.Collections2;
 
 /**
  * @author donglei
@@ -31,15 +34,17 @@ public class QueryService {
 			helper.add("(nickname:\"" + virtual.getNickname() + "\" AND source_id:" + virtual.getSource_id() + ")");
 		}
 		params.setFq(params.getFq() + ";" + helper.getString());
+		logger.info(params.toString());
 		return QueryCore.getInstance().queryData(params, false);
 	}
 
 	public Object getRelatedData(QueryParams params, String nickname) {
-		List<Virtual> virtuals = TrueUserHelper.getVirtuals(nickname);
+		Collection<Virtual> virtuals = TrueUserHelper.getVirtuals(nickname);
 		if (virtuals.isEmpty()) {
 			logger.info("True user '{}': has no virtuals!", nickname);
 			return new QueryResult();
 		}
+		virtuals = Collections2.filter(virtuals, new TrueUserHelper.VirtualPredicate(params.getFq()));
 		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
 		for (Virtual virtual : virtuals) {
 			helper.add("\"@" + virtual.getNickname() + "\"");
@@ -51,12 +56,7 @@ public class QueryService {
 		}
 		helper.add("\"" + trueUserInfo.getUserName() + "\"");
 		params.setFq(params.getFq() + ";content:(" + helper.getString() + ")");
-		// 添加关联分析中重点人员昵称标红
-		//		if ("*:*".equals(params.getQ())) {
-		//			params.setQ("content:(" + helper.getString() + ")");
-		//		} else {
-		//			params.setQ("(" + params.getQ() + ") AND content:(" + helper.getString() + ")");
-		//		}
+		logger.info(params.toString());
 		return QueryCore.getInstance().queryData(params, false);
 	}
 
