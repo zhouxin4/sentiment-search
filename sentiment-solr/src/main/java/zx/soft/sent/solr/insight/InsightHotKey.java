@@ -43,9 +43,9 @@ public class InsightHotKey {
 
 	public static final String VIRTUAL_URL = "http://192.168.32.20:8080/keyusers/virtualUser";
 	public static final String TRUE_USER = "http://192.168.32.20:8080/keyusers/trueUser/";
-
+	private RiakInsight insight = null;
 	public InsightHotKey() {
-		//
+		insight = new RiakInsight();
 	}
 
 	/**
@@ -55,6 +55,9 @@ public class InsightHotKey {
 		InsightHotKey firstPageRun = new InsightHotKey();
 		try {
 			firstPageRun.run();
+			//			long current = getHourTime(System.currentTimeMillis());
+			//			current = TimeUtils.transCurrentTime(current, 0, 0, 0, 1);
+			//			firstPageRun.insertTrueUserHotKey("86abe49fae4ad9eb07ecb765bf611209", current);
 		} catch (Exception e) {
 			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
 		}
@@ -62,7 +65,6 @@ public class InsightHotKey {
 
 	public void run() {
 		logger.info("Starting generate data...");
-		RiakInsight insight = new RiakInsight();
 		long current = getHourTime(System.currentTimeMillis());
 		current = TimeUtils.transCurrentTime(current, 0, 0, 0, 1);
 		for (AreaCode area : AreaCode.values()) {
@@ -70,7 +72,7 @@ public class InsightHotKey {
 			List<UserDomain> trueUsers = getTrueUser(areaCode);
 			for (UserDomain user : trueUsers) {
 				String trueUserId = user.getTureUserId();
-				for (int i = 0; i < 720; i++) {
+				for (int i = 0; i < 24; i++) {
 					long hours = TimeUtils.transCurrentTime(current, 0, 0, 0, -i);
 					Multiset<String> counts = getOneDayHotKeys(trueUserId, hours);
 					Map<String, Integer> hotKeys = getTopNHotKey(counts, 20);
@@ -86,6 +88,19 @@ public class InsightHotKey {
 		insight.close();
 		QueryCore.getInstance().close();
 		logger.info("Finishing query OA-FirstPage data...");
+	}
+
+	private void insertTrueUserHotKey(String trueUserId, long milliTime) {
+		for (int i = 0; i < 720; i++) {
+			long hours = TimeUtils.transCurrentTime(milliTime, 0, 0, 0, -i);
+			Multiset<String> counts = getOneDayHotKeys(trueUserId, hours);
+			Map<String, Integer> hotKeys = getTopNHotKey(counts, 20);
+			if (!hotKeys.isEmpty()) {
+				insight.insertHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(hours),
+						JsonUtils.toJsonWithoutPretty(hotKeys));
+				logger.info(hotKeys.toString());
+			}
+		}
 	}
 
 	private Multiset<String> getOneDayHotKeys(String trueUserId, long milliTime) {

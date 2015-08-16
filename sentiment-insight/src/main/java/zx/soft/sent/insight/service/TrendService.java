@@ -90,7 +90,9 @@ public class TrendService {
 						helper.clear();
 					}
 				}
-				fqs.add(helper.getString());
+				if (i != 0) {
+					fqs.add(helper.getString());
+				}
 
 				List<Callable<QueryResult>> calls = new ArrayList<>();
 				List<Group> groups = TrueUserHelper.getTrendGroup(nickname);
@@ -133,8 +135,8 @@ public class TrendService {
 			logger.error(e.getMessage());
 		}
 		try {
-			trend = trendTask.get();
-		} catch (InterruptedException | ExecutionException e) {
+			trend = trendTask.get(5, TimeUnit.SECONDS);
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			logger.error(e.getMessage());
 		}
 		List<KeyValue<String, Long>> topNTrends = TopN.topNOnValue(trend.getTrends(), 6);

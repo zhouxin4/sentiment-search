@@ -4,6 +4,7 @@ import zx.soft.sent.solr.allinternet.TaskUpdate;
 import zx.soft.sent.solr.firstpage.FirstPageRun;
 import zx.soft.sent.solr.index.ImportRedisToSC;
 import zx.soft.sent.solr.insight.InsightHotKey;
+import zx.soft.sent.solr.insight.UserActivity;
 import zx.soft.sent.solr.query.OracleToRedis;
 import zx.soft.sent.solr.query.RemoveRedisReplicationData;
 import zx.soft.sent.solr.query.RemoveSentiData;
@@ -45,6 +46,9 @@ public class SentSolrDriver {
 			pgd.addClass("taskUpdate", TaskUpdate.class, "全网任务信息查询结果存储缓存信息");
 			// 在hefei06机器上运行
 			pgd.addClass("insightHotKey", InsightHotKey.class, "分时段对所有重点人员计算热门关键词");
+			// 在hefei06机器上运行
+			pgd.addClass("userActivity", UserActivity.class, "定时更新真实用户的活跃度");
+
 			pgd.driver(args);
 			// Success
 			exitCode = 0;

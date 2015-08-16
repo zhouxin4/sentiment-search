@@ -1,15 +1,10 @@
 package zx.soft.sent.dao.insight;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.sent.core.riak.RiakInstance;
 import zx.soft.utils.log.LogbackUtil;
-import zx.soft.utils.threads.AwesomeThreadPool;
 
 import com.basho.riak.client.core.query.RiakObject;
 
@@ -35,21 +30,22 @@ public class RiakInsight {
 
 	public static void main(String[] args) {
 		final RiakInsight insight = new RiakInsight();
-		long start = System.currentTimeMillis();
-		List<Callable<String>> lists = new ArrayList<Callable<String>>();
-		for (int i = 0; i < 500; i++) {
-			lists.add(new Callable<String>() {
-
-				@Override
-				public String call() throws Exception {
-					// TODO Auto-generated method stub
-					return insight.selectHotkeys("hotkeys", "34232a86c69edcf1e86f3caefcbed9d6_2015-07-29,19");
-				}
-
-			});
-		}
-		AwesomeThreadPool.runCallables(5, lists);
-		logger.info("获取keys耗时: {}", System.currentTimeMillis() - start);
+		//		long start = System.currentTimeMillis();
+		//		List<Callable<String>> lists = new ArrayList<Callable<String>>();
+		//		for (int i = 0; i < 500; i++) {
+		//			lists.add(new Callable<String>() {
+		//
+		//				@Override
+		//				public String call() throws Exception {
+		//					// TODO Auto-generated method stub
+		//					return insight.selectHotkeys("hotkeys", "34232a86c69edcf1e86f3caefcbed9d6_2015-07-29,19");
+		//				}
+		//
+		//			});
+		//		}
+		//		AwesomeThreadPool.runCallables(5, lists);
+		//		logger.info("获取keys耗时: {}", System.currentTimeMillis() - start);
+		insight.deleteHotkeys("hotkeys", "86abe49fae4ad9eb07ecb765bf611209_2015-08-10,16");
 		insight.close();
 	}
 
