@@ -24,6 +24,7 @@ import zx.soft.utils.time.TimeUtils;
 import com.google.common.collect.Collections2;
 
 /**
+ * 发帖情况统计模块
  * @author donglei
  */
 @Service

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,12 +30,20 @@ import com.google.common.collect.Collections2;
 import com.google.common.primitives.Longs;
 
 /**
+ * 关联分析模块
  * @author donglei
  */
 @Service
 public class RelationService {
+
 	private static Logger logger = LoggerFactory.getLogger(PostService.class);
 
+	/**
+	 * 通过对所有虚拟帐号名进行搜索
+	 * @param params
+	 * @param nickname
+	 * @return
+	 */
 	private Map<String, Long> getRelatedNickname(QueryParams params, String nickname) {
 		long start = System.currentTimeMillis();
 		Collection<Virtual> virtuals = TrueUserHelper.getVirtuals(nickname);
@@ -71,31 +80,55 @@ public class RelationService {
 		return util.getDatas();
 	}
 
+	/**
+	 * 通过对单个帐号单独facet，并汇总统计－－ 准确度更高，但加重了服务器端facet的压力
+	 * @param params
+	 * @param nickname
+	 * @return
+	 */
+	private Map<String, Long> getRelatedNicknameV2(QueryParams params, String nickname) {
+		long start = System.currentTimeMillis();
+		Collection<Virtual> virtuals = TrueUserHelper.getVirtuals(nickname);
+		virtuals = Collections2.filter(virtuals, new TrueUserHelper.VirtualPredicate(params.getFq()));
+		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
+		for (Virtual virtual : virtuals) {
+			helper.add(virtual.getSource_id(), "\"" + virtual.getNickname() + "\"");
+		}
+		params.setFacetField("nickname");
+		List<Callable<QueryResult>> calls = new ArrayList<>();
+		Map<Object, String> tmps = helper.getALLString();
+		for (Map.Entry<Object, String> entry : tmps.entrySet()) {
+			final QueryParams tmp = params.clone();
+			tmp.setFq(tmp.getFq() + ";" + "content:(" + entry.getValue() + ")");
+			tmp.setFq(tmp.getFq() + ";" + "source_id:" + entry.getKey());
+			calls.add(new QueryCallable(entry.getKey().toString(), tmp));
+		}
+		if (calls.isEmpty()) {
+			logger.info("True user '{}': has no virtuals on {}!", nickname, params.getFq());
+			return new HashMap<String, Long>();
+		}
+		List<QueryResult> results = AwesomeThreadPool.runCallables(calls.size(), calls);
+
+		RawType util = new RawType();
+		for (QueryResult result : results) {
+			for (SimpleFacetInfo facetInfo : result.getFacetFields()) {
+				if ("nickname".equals(facetInfo.getName())) {
+					for (Entry<String, Long> count : facetInfo.getValues().entrySet()) {
+						util.countData(count.getKey(), count.getValue());
+					}
+				}
+			}
+		}
+		for (Virtual vir : virtuals) {
+			util.removeData(vir.getNickname());
+		}
+		logger.info("关系分析耗时: {}", System.currentTimeMillis() - start);
+		return util.getDatas();
+	}
+
 	public Object relationAnalysed(QueryParams params, String nickname) {
 		QueryParams tmp = params.clone();
-		//		List<Virtual> virtuals = getVirtuals(nickname);
-		//		RawType util = new RawType();
-		Map<String, Long> count = getRelatedNickname(tmp, nickname);
-		//      暂时只考虑其他账号和真实用户的关系
-		//		for (Virtual virtual : virtuals) {
-		//			util.addQueryParam("fq", "(nickname:" + virtual.getNickname() + " AND source_id:" + virtual.getSource_id()
-		//					+ ")");
-		//		}
-		//		params.setFq(params.getFq() + ";" + util.getQueryParams().get("fq"));
-		//		List<Callable<QueryResult>> calls = new ArrayList<>();
-		//		for (String rel : count.keySet()) {
-		//			QueryParams queryTmp = params.clone();
-		//			queryTmp.setQ(queryTmp.getQ() + " AND " + "\"" + rel + "\"");
-		//			calls.add(new MyCallable(rel, queryTmp));
-		//		}
-		//		List<QueryResult> queryResults = AwesomeThreadPool.runCallables(5, calls, QueryResult.class);
-		//		for (QueryResult queryResult : queryResults) {
-		//			if (count.containsKey(queryResult.getTag())) {
-		//				count.put(queryResult.getTag(), queryResult.getNumFound() + count.get(queryResult.getTag()));
-		//			} else {
-		//				count.put(queryResult.getTag(), queryResult.getNumFound());
-		//			}
-		//		}
+		Map<String, Long> count = getRelatedNicknameV2(tmp, nickname);
 		List<Entry<String, Long>> hotRels = new ArrayList<>();
 		for (Entry<String, Long> entry : count.entrySet()) {
 			hotRels.add(entry);
