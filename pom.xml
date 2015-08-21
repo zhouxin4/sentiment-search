@@ -23,6 +23,7 @@
 		<module>sentiment-spring</module>
 		<module>sentiment-api</module>
 		<module>sentiment-insight</module>
+		<module>sentiment-origin</module>
 	</modules>
 
 	<dependencies>
