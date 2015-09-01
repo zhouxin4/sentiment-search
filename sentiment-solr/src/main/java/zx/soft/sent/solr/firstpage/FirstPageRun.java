@@ -3,6 +3,7 @@ package zx.soft.sent.solr.firstpage;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import zx.soft.negative.sentiment.core.NegativeClassify;
 import zx.soft.sent.dao.firstpage.FirstPagePersistable;
 import zx.soft.sent.dao.firstpage.RiakFirstPage;
+import zx.soft.utils.algo.TopN;
 import zx.soft.utils.checksum.CheckSumUtils;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
@@ -102,7 +104,7 @@ public class FirstPageRun {
 		}*/
 
 		negativeRecordsForum = oafirstPage.getHarmfulRecords("1,2,3,4,7,10", 0, 30);
-		negativeRecordsForum = FirstPageRun.getTopNNegativeRecords(negativeClassify, negativeRecordsForum, 50);
+		negativeRecordsForum = FirstPageRun.getNewTopNNegativeRecords(negativeClassify, negativeRecordsForum, 50);
 		firstPage.insertFirstPage(0, FirstPageRun.timeStrByHour(), JsonUtils.toJsonWithoutPretty(negativeRecordsForum));
 		//		System.out.println(JsonUtils.toJson(negativeRecordsForum));
 
@@ -118,6 +120,12 @@ public class FirstPageRun {
 	 */
 	public static String timeStrByHour() {
 		return FORMATTER.format(new Date());
+	}
+
+	public static List<SolrDocument> getNewTopNNegativeRecords(NegativeClassify negativeClassify,
+			List<SolrDocument> records, int N) {
+		List<SolrDocument> docs = TopN.topNUnique(records, N, new MyComparator(negativeClassify));
+		return docs;
 	}
 
 	/**
@@ -139,7 +147,7 @@ public class FirstPageRun {
 			if (records.get(i).get("content") != null) {
 				str += records.get(i).get("content").toString();
 			}
-			insertTables[i] = i + "=" + (int) (negativeClassify.getTextScore(str));
+			insertTables[i] = i + "=" + (int) negativeClassify.getTextScore(str);
 		}
 		String[] table = new String[records.size()];
 		for (int i = 0; i < table.length; i++) {
@@ -163,4 +171,55 @@ public class FirstPageRun {
 		return result;
 	}
 
+}
+
+class MyComparator implements Comparator<SolrDocument> {
+
+	private HashMap<String, Float> hashs;
+	private NegativeClassify negativeClassify;
+
+	public MyComparator(NegativeClassify negativeClassify) {
+		hashs = new HashMap<>();
+		this.negativeClassify = negativeClassify;
+	}
+
+	@Override
+	public int compare(SolrDocument o1, SolrDocument o2) {
+		float score1 = 0;
+		float score2 = 0;
+		String md1 = CheckSumUtils.getMD5(o1.getFieldValue("content").toString());
+		String md2 = CheckSumUtils.getMD5(o2.getFieldValue("content").toString());
+		if (!hashs.containsKey(md1)) {
+			score1 = getScore(o1);
+			hashs.put(md1, score1);
+		} else {
+			score1 = hashs.get(md1);
+		}
+		if (!hashs.containsKey(md2)) {
+			score2 = getScore(o2);
+			hashs.put(md2, score2);
+		} else {
+			score2 = hashs.get(md2);
+		}
+		return score1 - score2 > 0 ? 1 : score1 - score2 < 0 ? -1 : 0;
+
+	}
+
+	public float getScore(SolrDocument o1) {
+		String str = "";
+		if (o1.get("title") != null) {
+			str += o1.get("title").toString();
+		}
+		if (o1.get("content") != null) {
+			str += o1.get("content").toString();
+		}
+		if (str.isEmpty()) {
+			return 0;
+		}
+		float score = negativeClassify.getTextScore(str);
+		//		int rate = str.length() / 20 + 1;
+		int rate = (int) Math.log10(str.length()) + 1;
+		o1.setField("score", (int) (score / rate));
+		return score / rate;
+	}
 }

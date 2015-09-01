@@ -1,6 +1,7 @@
 package zx.soft.sent.origin.controller;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,8 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
+import org.ansj.app.keyword.KeyWordComputer;
+import org.ansj.app.keyword.Keyword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,8 +26,9 @@ import zx.soft.sent.origin.service.OriginService;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.string.StringUtils;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.hankcs.hanlp.HanLP;
+import com.google.common.collect.Collections2;
 
 /**
  * 索引控制类
@@ -38,6 +42,8 @@ public class OriginController {
 
 	private static Logger logger = LoggerFactory.getLogger(OriginController.class);
 
+	private static KeyWordComputer kwc = new KeyWordComputer(20);
+
 	@Inject
 	private OriginService originService;
 
@@ -47,7 +53,16 @@ public class OriginController {
 		if (StringUtils.isEmpty(text)) {
 			return new ArrayList<String>();
 		}
-		return HanLP.extractKeyword(text, 50);
+		Collection<Keyword> keywords = kwc.computeArticleTfidf(text);
+		Collection<String> keys = Collections2.transform(keywords, new Function<Keyword, String>() {
+
+			@Override
+			public String apply(Keyword input) {
+				// TODO Auto-generated method stub
+				return input.getName();
+			}
+		});
+		return keys;
 	}
 
 	@RequestMapping(value = "/counts", method = RequestMethod.POST)

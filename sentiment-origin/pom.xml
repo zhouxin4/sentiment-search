@@ -1,18 +1,20 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>zx.soft</groupId>
-    <artifactId>sentiment-search</artifactId>
-    <version>2.2.0</version>
-  </parent>
-  <artifactId>sentiment-origin</artifactId>
-  <name>Sentiment Origin</name>
-  <dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>zx.soft</groupId>
+		<artifactId>sentiment-search</artifactId>
+		<version>2.2.0</version>
+	</parent>
+	<artifactId>sentiment-origin</artifactId>
+	<name>Sentiment Origin</name>
+	<dependencies>
 		<dependency>
-			<groupId>com.hankcs</groupId>
-			<artifactId>hanlp</artifactId>
-			<version>portable-1.2.4</version>
+			<groupId>org.ansj</groupId>
+			<artifactId>ansj_seg</artifactId>
+			<version>1.4.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>zx.soft</groupId>
 			<artifactId>common-utils</artifactId>
@@ -169,6 +171,13 @@
 			<name>Nexus Release Repository</name>
 			<url>http://192.168.3.23:18081/nexus/content/groups/public/</url>
 		</repository>
+
+		<repository>
+			<id>mvn-repo</id>
+			<url>http://maven.ansj.org/</url>
+		</repository>
 	</repositories>
+
+
 
 </project>

@@ -2,10 +2,13 @@ package zx.soft.sent.solr.insight;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.ansj.app.keyword.KeyWordComputer;
+import org.ansj.app.keyword.Keyword;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +27,10 @@ import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.time.TimeUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.hankcs.hanlp.HanLP;
 
 /**
  * 重点人员分时段统计热们关键词：hefei06
@@ -41,9 +45,12 @@ public class InsightHotKey {
 	private final static int NUM_EACH_POST = 10;
 	private static Logger logger = LoggerFactory.getLogger(InsightHotKey.class);
 
+	private static KeyWordComputer kwc = new KeyWordComputer(NUM_EACH_POST);
+
 	public static final String VIRTUAL_URL = "http://192.168.32.20:8080/keyusers/virtualUser";
 	public static final String TRUE_USER = "http://192.168.32.20:8080/keyusers/trueUser/";
 	private RiakInsight insight = null;
+
 	public InsightHotKey() {
 		insight = new RiakInsight();
 	}
@@ -151,8 +158,16 @@ public class InsightHotKey {
 			String content = (String) doc.getFieldValue("content");
 			if (content != null) {
 				content = content.replaceAll("[http|https]+[://]+[0-9A-Za-z:/[-]_#[?][=][.][&]]*", "");
-				List<String> hotKeys = HanLP.extractKeyword(content, NUM_EACH_POST);
-				counts.addAll(hotKeys);
+				Collection<Keyword> keywords = kwc.computeArticleTfidf(content);
+				Collection<String> keys = Collections2.transform(keywords, new Function<Keyword, String>() {
+
+					@Override
+					public String apply(Keyword input) {
+						return input.getName();
+					}
+				});
+				//				List<String> hotKeys = HanLP.extractKeyword(content, NUM_EACH_POST);
+				counts.addAll(keys);
 			}
 		}
 	}
