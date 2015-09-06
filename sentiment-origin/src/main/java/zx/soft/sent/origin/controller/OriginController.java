@@ -42,7 +42,7 @@ public class OriginController {
 
 	private static Logger logger = LoggerFactory.getLogger(OriginController.class);
 
-	private static KeyWordComputer kwc = new KeyWordComputer(20);
+	private static KeyWordComputer kwc = new KeyWordComputer(6);
 
 	@Inject
 	private OriginService originService;

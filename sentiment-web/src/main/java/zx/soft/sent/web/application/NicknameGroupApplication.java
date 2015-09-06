@@ -1,21 +1,20 @@
 package zx.soft.sent.web.application;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.domain.SimpleFacetInfo;
-import zx.soft.sent.solr.query.SearchingData;
+import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.sent.web.resource.NicknameGroupResource;
-import zx.soft.utils.sort.InsertSort;
 
 /**
  * 舆情搜索应用类
@@ -24,11 +23,9 @@ import zx.soft.utils.sort.InsertSort;
  *
  */
 public class NicknameGroupApplication extends Application {
-
-	private final SearchingData searchingData;
+	private static Logger logger = LoggerFactory.getLogger(NicknameGroupApplication.class);
 
 	public NicknameGroupApplication() {
-		searchingData = new SearchingData();
 	}
 
 	@Override
@@ -38,50 +35,33 @@ public class NicknameGroupApplication extends Application {
 		return router;
 	}
 
-	public HashMap<String, Integer> queryData(QueryParams queryParams) {
+	public Map<String, Long> queryData(QueryParams queryParams) {
 		long startTime = System.currentTimeMillis();
-		List<QueryResult> queryResults = searchingData.facetResult(queryParams, true);
-		//		System.err.println(System.currentTimeMillis() - startTime);
-		//		startTime = System.currentTimeMillis();
-		for (String field : queryParams.getFacetField().split(",")) {
-			Map<String, Long> facet = new HashMap<String, Long>();
-			for (QueryResult queryResult : queryResults) {
-				for (SimpleFacetInfo info : queryResult.getFacetFields()) {
-					if (info.getName().equals(field)) {
-						for (Entry<String, Long> entrys : info.getValues().entrySet()) {
-							String key = entrys.getKey();
-							if (facet.containsKey(key)) {
-								facet.put(key, facet.get(key) + entrys.getValue());
-							} else {
-								facet.put(key, entrys.getValue());
-							}
-						}
+		QueryResult queryResult = QueryCore.getInstance().queryData(queryParams, true);
+		Map<String, Long> facet = new HashMap<String, Long>();
+		for (SimpleFacetInfo info : queryResult.getFacetFields()) {
+			if (info.getName().equals("nickname")) {
+				int i = 0;
+				for (Entry<String, Long> entrys : info.getValues().entrySet()) {
+					String key = entrys.getKey();
+					if (facet.containsKey(key)) {
+						facet.put(key, facet.get(key) + entrys.getValue());
+					} else {
+						facet.put(key, entrys.getValue());
+					}
+					i++;
+					if (i == 10) {
+						break;
 					}
 				}
 			}
-			String[] table = new String[10];
-			for (int i = 0; i < table.length; i++) {
-				table[i] = "0=0";
-			}
-			for (Entry<String, Long> tmp : facet.entrySet()) {
-				table = InsertSort.toptable(table, tmp.getKey() + "=" + tmp.getValue());
-			}
-			HashMap<String, Integer> result = new LinkedHashMap<>();
-			for (int i = 0; i < table.length; i++) {
-				if ("0=0".equalsIgnoreCase(table[i])) {
-					break;
-				}
-				int lastindex = table[i].lastIndexOf("=");
-				result.put(table[i].substring(0, lastindex), Integer.parseInt(table[i].substring(lastindex + 1)));
-			}
-			System.err.println(System.currentTimeMillis() - startTime);
-			return result;
 		}
-		return null;
+		logger.info("获取热门帐号耗时: {}" + (System.currentTimeMillis() - startTime));
+		return facet;
 	}
 
 	public void close() {
-		searchingData.close();
+		QueryCore.getInstance().close();
 	}
 
 }

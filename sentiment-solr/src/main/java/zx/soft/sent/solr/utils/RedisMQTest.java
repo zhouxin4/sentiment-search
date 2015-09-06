@@ -14,7 +14,11 @@ public class RedisMQTest {
 		// 单线程
 		//		runSimpleThread();
 		// 多线程
-		runMultiThreads();
+		//		runMultiThreads();
+		RedisMQ mq = new RedisMQ();
+		System.out.println(mq.getSetSize());
+		mq.close();
+
 	}
 
 	public static void runSimpleThread() {

@@ -11,6 +11,7 @@ import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
+import zx.soft.utils.time.TimeUtils;
 
 /**
  * OA溯源任务查询线程
@@ -51,11 +52,14 @@ public class OriginUpdateRunnable implements Runnable {
 			QueryResult result = search.queryData(queryParams, true);
 			int localCount = (int) result.getNumFound();
 			OriginPostModel originPost = new OriginPostModel();
-			int i = 0;
 			originPost.setCount(localCount);
 			originPost.setOrigin(localCount > 100 ? 100 : localCount);
-			originPost.setUpdateTime(task.getEnd_time());
+			originPost.setUpdateTime(TimeUtils.transToSolrDateStr(System.currentTimeMillis()));
+			int i = 0;
 			for (SolrDocument doc : result.getResults()) {
+				if (doc.getFieldValue("content") != null && doc.getFieldValue("content").toString().length() > 40000) {
+					continue;
+				}
 				originPost.addDoc(doc);
 				i++;
 				if (i % 10 == 0) {
@@ -65,7 +69,8 @@ public class OriginUpdateRunnable implements Runnable {
 					originPost.getDocs().clear();
 				}
 			}
-			if (i % 10 != 0) {
+			if (i % 10 != 0 || i == 0) {
+				originPost.setPage(i / 10 + 1);
 				riakAccess.insertHotkeys("origins", task.getIdentify() + "_P" + (i / 10 + 1),
 						JsonUtils.toJsonWithoutPretty(originPost));
 				originPost.getDocs().clear();
@@ -74,5 +79,4 @@ public class OriginUpdateRunnable implements Runnable {
 			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
 		}
 	}
-
 }
