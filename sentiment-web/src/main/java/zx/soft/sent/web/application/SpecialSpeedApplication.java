@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.codehaus.jackson.JsonNode;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
@@ -20,9 +19,11 @@ import zx.soft.sent.web.resource.SpecialSpeedResource;
 import zx.soft.utils.json.JsonNodeUtils;
 import zx.soft.utils.log.LogbackUtil;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 /**
  * 专题模块应用类
- * 
+ *
  * @author wanggang
  *
  */
@@ -92,7 +93,7 @@ public class SpecialSpeedApplication extends Application {
 		JsonNode countByDay = JsonNodeUtils.getJsonNode(queryResult, "countByDay");
 		trendChart.setSpecialInfo(new SpecialInfo(specialInfo.get("identify").toString().replaceAll("\"", ""),
 				specialInfo.get("specialName").toString().replaceAll("\"", "")));
-		Iterator<String> names = countByDay.getFieldNames();
+		Iterator<String> names = countByDay.fieldNames();
 		String key;
 		while (names.hasNext()) {
 			key = names.next();

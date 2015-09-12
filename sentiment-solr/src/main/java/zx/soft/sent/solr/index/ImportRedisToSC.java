@@ -6,7 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.dao.domain.platform.RecordInfo;
+import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.solr.utils.RedisCacheExpired;
 import zx.soft.sent.solr.utils.RedisMQ;
 import zx.soft.utils.log.LogbackUtil;

@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.core.redis.RedisReplication;
 import zx.soft.sent.dao.common.MybatisConfig;
-import zx.soft.sent.dao.domain.platform.RecordInfo;
 import zx.soft.sent.dao.sentiment.SentimentRecord;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.threads.ApplyThreadPool;

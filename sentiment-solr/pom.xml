@@ -14,6 +14,25 @@
 	<description>Sentiment CloudSolr</description>
 
 	<dependencies>
+		<!-- 微博服务包 -->
+		<dependency>
+			<groupId>zx.soft</groupId>
+			<artifactId>weibo-core</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hbase</groupId>
+			<artifactId>hbase-client</artifactId>
+			<version>0.98.6-hadoop2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+				<!-- <exclusion> <groupId>log4j</groupId> <artifactId>log4j</artifactId> 
+					</exclusion> -->
+			</exclusions>
+		</dependency>
 		<dependency>
 			<groupId>org.ansj</groupId>
 			<artifactId>ansj_seg</artifactId>
@@ -37,6 +56,11 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sentiment-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sentiment-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -104,6 +128,8 @@
 						<exclude>oracle_db.properties</exclude>
 						<exclude>solr_params.properties</exclude>
 						<exclude>cache-config.properties</exclude>
+						<exclude>hbase.properties</exclude>
+						<exclude>hive-conn.properties</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -129,7 +155,7 @@
 		<finalName>${project.artifactId}-${project.version}</finalName>
 
 	</build>
-	
+
 	<!-- 指定公司私有Maven仓库地址，以便下载该jar包 -->
 	<repositories>
 		<repository>

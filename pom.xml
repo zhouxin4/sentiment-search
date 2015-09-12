@@ -15,7 +15,6 @@
 
 	<modules>
 		<module>sentiment-dao</module>
-		<module>sentiment-hdfs</module>
 		<module>sentiment-solr</module>
 		<module>sentiment-spider</module>
 		<module>sentiment-core</module>
@@ -24,6 +23,7 @@
 		<module>sentiment-api</module>
 		<module>sentiment-insight</module>
 		<module>sentiment-origin</module>
+		<module>sentiment-common</module>
 	</modules>
 
 	<dependencies>

@@ -7,11 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import zx.soft.sent.common.insight.TrueUserHelper;
+import zx.soft.sent.common.insight.UserDomain;
+import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.sent.core.domain.QueryParams;
-import zx.soft.sent.insight.utils.TrueUserHelper;
 import zx.soft.sent.solr.domain.QueryResult;
-import zx.soft.sent.solr.insight.UserDomain;
-import zx.soft.sent.solr.insight.Virtuals.Virtual;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.string.ConcatMethod;
 import zx.soft.utils.string.StringConcatHelper;
@@ -24,6 +24,7 @@ import com.google.common.collect.Collections2;
 @Service
 public class QueryService {
 	private static Logger logger = LoggerFactory.getLogger(QueryService.class);
+
 	public QueryResult queryData(QueryParams params, String nickname) {
 		List<Virtual> virtuals = TrueUserHelper.getVirtuals(nickname);
 		if (virtuals.isEmpty()) {

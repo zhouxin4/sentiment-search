@@ -8,7 +8,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.Test;
 
-import zx.soft.sent.dao.domain.platform.RecordInfo;
+import zx.soft.sent.common.index.RecordInfo;
 
 public class IndexCloudSolrTest {
 

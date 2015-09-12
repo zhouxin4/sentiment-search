@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,15 +17,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import zx.soft.sent.core.domain.ErrorResponse;
 import zx.soft.sent.core.domain.QueryParams;
+import zx.soft.sent.insight.domain.RelationRequest;
+import zx.soft.sent.insight.domain.RelationRequest.EndPoint;
 import zx.soft.sent.insight.service.PostService;
 import zx.soft.sent.insight.service.QueryService;
-import zx.soft.sent.insight.service.RelationService;
+import zx.soft.sent.insight.service.RelationServiceV2;
 import zx.soft.sent.insight.service.TrendService;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.time.TimeUtils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
  *
@@ -41,7 +45,7 @@ public class InsightController {
 	@Inject
 	private QueryService queryService;
 	@Inject
-	private RelationService relationService;
+	private RelationServiceV2 relationService;
 	@Inject
 	private TrendService trendService;
 
@@ -139,12 +143,37 @@ public class InsightController {
 			logger.error("Params `nickname` is null.");
 			return new ErrorResponse.Builder(-1, "params error!").build();
 		}
-		QueryParams queryParams = new QueryParams();
-		queryParams.setQ(request.getParameter("q") == null ? "*:*" : request.getParameter("q"));
-		queryParams.setFq(request.getParameter("fq") == null ? "" : request.getParameter("fq"));
-		queryParams.setQop("OR");
-		logger.info(queryParams.toString());
-		return relationService.relationAnalysed(queryParams, nickname);
+		RelationRequest relationRequest = new RelationRequest();
+		relationRequest.setService(EndPoint.RELATION);
+		relationRequest.setTrueUserId(nickname);
+		if (request.getParameter("timestamp") != null) {
+			relationRequest.setTimestamp(request.getParameter("timestamp"));
+		}
+		if (request.getParameter("platform") != null) {
+			relationRequest.setPlatform(Integer.parseInt(request.getParameter("platform")));
+		}
+		if (request.getParameter("source_id") != null) {
+			relationRequest.setSource_id(Integer.parseInt(request.getParameter("source_id")));
+		}
+		return relationService.relationAnalysed(relationRequest);
+	}
+
+	@RequestMapping(value = "/relation/query", method = RequestMethod.POST)
+	@ResponseStatus(HttpStatus.CREATED)
+	public @ResponseBody Object relationQuery(@RequestBody RelationRequest request) {
+		if (request.getService().equals(EndPoint.POST)) {
+			if (Strings.isNullOrEmpty(request.getTrueUserId())) {
+				logger.error("Params `nickname` is null.");
+				return new ErrorResponse.Builder(-1, "params error!").build();
+			} else {
+				return relationService.getRelationPosts(request);
+			}
+		}
+		if (request.getService().equals(EndPoint.DETAIL) && Strings.isNullOrEmpty(request.getSolr_id())) {
+			logger.error("Params `solr_id` is null.");
+			return new ErrorResponse.Builder(-1, "params error!").build();
+		}
+		return relationService.getPostDetail(request);
 	}
 
 }

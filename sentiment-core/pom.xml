@@ -12,9 +12,45 @@
 	<artifactId>sentiment-core</artifactId>
 	<name>Sentiment Core</name>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<cdh.hive.version>0.13.1-cdh5.2.1</cdh.hive.version>
+		<cdh.hadoop.version>2.5.0-cdh5.2.1</cdh.hadoop.version>
+	</properties>
+
 	<dependencies>
-		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>sentiment-dao</artifactId> 
-			<version>${project.version}</version> </dependency> -->
+		<dependency>
+			<groupId>zx.soft</groupId>
+			<artifactId>common-utils</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-jdbc</artifactId>
+			<version>${cdh.hive.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hbase</groupId>
+			<artifactId>hbase-client</artifactId>
+			<version>0.98.6-hadoop2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<!-- riak -->
 		<dependency>
 			<groupId>com.basho.riak</groupId>
@@ -58,5 +94,17 @@
 	<build>
 		<finalName>${project.artifactId}-${project.version}</finalName>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>zxsoft-public</id>
+			<name>Nexus Release Repository</name>
+			<url>http://192.168.3.23:18081/nexus/content/groups/public/</url>
+		</repository>
+		<repository>
+			<id>cloudera</id>
+			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+		</repository>
+	</repositories>
 
 </project>

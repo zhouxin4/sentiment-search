@@ -3,7 +3,6 @@ package zx.soft.sent.web.resource;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.codehaus.jackson.JsonNode;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
@@ -19,6 +18,8 @@ import zx.soft.sent.solr.special.TrendChart;
 import zx.soft.sent.web.application.SpecialApplication;
 import zx.soft.utils.codec.URLCodecUtils;
 import zx.soft.utils.json.JsonNodeUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * 专题资源类
@@ -93,7 +94,7 @@ public class SpecialResource extends ServerResource {
 		JsonNode countByDay = JsonNodeUtils.getJsonNode(queryResult, "countByDay");
 		trendChart.setSpecialInfo(new SpecialInfo(specialInfo.get("identify").toString().replaceAll("\"", ""),
 				specialInfo.get("specialName").toString().replaceAll("\"", "")));
-		Iterator<String> names = countByDay.getFieldNames();
+		Iterator<String> names = countByDay.fieldNames();
 		String key;
 		while (names.hasNext()) {
 			key = names.next();

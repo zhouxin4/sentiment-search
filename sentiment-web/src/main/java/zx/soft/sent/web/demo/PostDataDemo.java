@@ -3,8 +3,8 @@ package zx.soft.sent.web.demo;
 import java.util.ArrayList;
 import java.util.List;
 
-import zx.soft.sent.dao.domain.platform.RecordInfo;
-import zx.soft.sent.web.domain.PostData;
+import zx.soft.sent.common.index.PostData;
+import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.utils.json.JsonUtils;
 
 public class PostDataDemo {

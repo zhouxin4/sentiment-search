@@ -1,19 +1,20 @@
 package zx.soft.sent.solr.insight;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import zx.soft.sent.common.insight.AreaCode;
+import zx.soft.sent.common.insight.TrueUserHelper;
+import zx.soft.sent.common.insight.UserDomain;
+import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.solr.domain.QueryResult;
-import zx.soft.sent.solr.insight.Virtuals.Virtual;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.http.HttpClientDaoImpl;
 import zx.soft.utils.json.JsonNodeUtils;
-import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.string.ConcatMethod;
 import zx.soft.utils.string.StringConcatHelper;
@@ -33,9 +34,8 @@ public class UserActivity {
 
 	private static Logger logger = LoggerFactory.getLogger(UserActivity.class);
 
-	public static final String VIRTUAL_URL = "http://192.168.32.20:8080/keyusers/virtualUser";
-	public static final String TRUE_USER = "http://192.168.32.20:8080/keyusers/trueUser/";
 	public static final String ACTIVITY_URL = "http://192.168.32.20:8080/keyusers/updateTrueActive";
+
 	public UserActivity() {
 	}
 
@@ -61,11 +61,11 @@ public class UserActivity {
 		params.setFq("timestamp:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
 				+ TimeUtils.transToSolrDateStr(currentTime) + "]");
 		for (AreaCode area : AreaCode.values()) {
-			List<UserDomain> trueUsers = getTrueUser(area.getAreaCode());
+			List<UserDomain> trueUsers = TrueUserHelper.getTrueUsers(area.getAreaCode());
 			for (UserDomain user : trueUsers) {
 				helper.clear();
 				String trueUserId = user.getTureUserId();
-				List<Virtual> virtuals = getVirtuals(trueUserId);
+				List<Virtual> virtuals = TrueUserHelper.getVirtuals(trueUserId);
 				if (!virtuals.isEmpty()) {
 					for (Virtual virtual : virtuals) {
 						helper.add("(nickname:\"" + virtual.getNickname() + "\" AND source_id:"
@@ -76,11 +76,9 @@ public class UserActivity {
 					QueryResult result = QueryCore.getInstance().queryData(tmp, false);
 					HttpClientDaoImpl client = new HttpClientDaoImpl();
 					String response = client.doPostAndGetResponse(ACTIVITY_URL, "{\"tureUserId\":\"" + trueUserId
-							+ "\",\"pre_count\":"
-							+ result.getNumFound() + "}");
+							+ "\",\"pre_count\":" + result.getNumFound() + "}");
 					JsonNode errorResponse = JsonNodeUtils
-							.getJsonNode(JsonNodeUtils.getJsonNode(response),
-							"errorCode");
+							.getJsonNode(JsonNodeUtils.getJsonNode(response), "errorCode");
 					if (errorResponse.intValue() != 0) {
 						logger.info(response);
 					}
@@ -90,37 +88,6 @@ public class UserActivity {
 		// 关闭资源
 		QueryCore.getInstance().close();
 		logger.info("Finishing query OA-FirstPage data...");
-	}
-
-
-
-
-
-
-	public List<Virtual> getVirtuals(String trueUser) {
-		String data = "{\"trueUserId\":\"" + trueUser + "\",\"page\":1,\"size\":100}";
-		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
-		long start = System.currentTimeMillis();
-		String response = httpclient.doPostAndGetResponse(VIRTUAL_URL, data);
-		logger.info("获取虚拟账号耗时: {}", System.currentTimeMillis() - start);
-		if (!"error".equals(response)) {
-			JsonNode node = JsonNodeUtils.getJsonNode(response, "response");
-			List<Virtual> virs = JsonUtils.parseJsonArray(node.toString(), Virtual.class);
-			return virs;
-		}
-		return new ArrayList<>();
-	}
-
-	public List<UserDomain> getTrueUser(String areaCode) {
-		String data = "{\"areaCode\":" + areaCode + "}";
-		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
-		String response = httpclient.doPostAndGetResponse(TRUE_USER, data);
-		if (!"error".equals(response)) {
-			JsonNode node = JsonNodeUtils.getJsonNode(response, "response");
-			List<UserDomain> virs = JsonUtils.parseJsonArray(node.toString(), UserDomain.class);
-			return virs;
-		}
-		return new ArrayList<>();
 	}
 
 	public static long getHourTime(long milli) {

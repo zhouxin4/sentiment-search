@@ -15,6 +15,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>sentiment-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sentiment-dao</artifactId>
 			<version>${project.version}</version>
 			<exclusions>

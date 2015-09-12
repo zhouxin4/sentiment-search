@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import zx.soft.sent.common.index.PostData;
 import zx.soft.sent.spring.domain.ErrorResponse;
-import zx.soft.sent.spring.domain.PostData;
 import zx.soft.sent.spring.service.IndexService;
 
 /**
  * 索引控制类
- * 
+ *
  * @author wanggang
  *
  */
@@ -29,8 +29,7 @@ public class IndexController {
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
-	public @ResponseBody
-	ErrorResponse add(@RequestBody PostData postData) {
+	public @ResponseBody ErrorResponse add(@RequestBody PostData postData) {
 		return indexService.addIndexData(postData);
 	}
 

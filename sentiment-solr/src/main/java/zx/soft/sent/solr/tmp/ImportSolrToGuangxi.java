@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.dao.common.MybatisConfig.ServerEnum;
-import zx.soft.sent.dao.domain.platform.RecordInfo;
 import zx.soft.sent.dao.domain.sentiment.RecordSelect;
 import zx.soft.sent.dao.sentiment.SentimentRecord;
 import zx.soft.utils.http.HttpClientDaoImpl;
@@ -54,8 +54,7 @@ public class ImportSolrToGuangxi {
 				int platform = record.getPlatform();
 				if (platform == 1 || platform == 3 || platform == 4 || platform == 5) {
 					RecordInfo info = parseRecord(record);
-					String response = new HttpClientDaoImpl().doPost(BASE_URL,
-							JsonUtils.toJsonWithoutPretty(info));
+					String response = new HttpClientDaoImpl().doPost(BASE_URL, JsonUtils.toJsonWithoutPretty(info));
 					logger.info(record.getId() + "-----" + response);
 				}
 			}

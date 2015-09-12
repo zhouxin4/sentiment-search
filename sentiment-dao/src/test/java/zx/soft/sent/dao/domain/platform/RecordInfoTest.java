@@ -6,6 +6,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import zx.soft.sent.common.index.RecordInfo;
+
 public class RecordInfoTest {
 
 	private static RecordInfo recordInfo;

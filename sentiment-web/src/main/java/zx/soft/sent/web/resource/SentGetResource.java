@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import zx.soft.sent.core.domain.ErrorResponse;
 import zx.soft.utils.codec.URLCodecUtils;
-import zx.soft.utils.http.HttpUtils;
+import zx.soft.utils.http.HttpClientDaoImpl;
 
 /**
  * 舆情数据获取资源类
@@ -52,7 +52,7 @@ public class SentGetResource extends ServerResource {
 		if (id.length() == 0) {
 			return new ErrorResponse.Builder(20003, "your query params is illegal.").build();
 		}
-		return HttpUtils.doGet(BASE_URL + id, "utf-8");
+		return new HttpClientDaoImpl().doGet(BASE_URL + id, "utf-8");
 	}
 
 }

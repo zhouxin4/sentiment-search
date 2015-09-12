@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.solr.common.SolrDocument;
-import org.codehaus.jackson.JsonNode;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
@@ -20,6 +19,8 @@ import zx.soft.sent.dao.firstpage.RiakFirstPage;
 import zx.soft.sent.web.resource.FirstPageResource;
 import zx.soft.utils.chars.JavaPattern;
 import zx.soft.utils.json.JsonNodeUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class FirstPageApplication extends Application {
 
@@ -105,7 +106,7 @@ public class FirstPageApplication extends Application {
 		SolrDocument doc = null;
 		for (int i = 0; i < node.size(); i++) {
 			doc = new SolrDocument();
-			keys = node.get(i).getFieldNames();
+			keys = node.get(i).fieldNames();
 			while (keys.hasNext()) {
 				key = keys.next();
 				value = node.get(i).get(key).toString().replaceAll("\"", "");
@@ -126,7 +127,7 @@ public class FirstPageApplication extends Application {
 		}
 		HashMap<String, Long> result = new HashMap<>();
 		JsonNode node = JsonNodeUtils.getJsonNode(jsonStr);
-		Iterator<String> keys = node.getFieldNames();
+		Iterator<String> keys = node.fieldNames();
 		String key = null;
 		while (keys.hasNext()) {
 			key = keys.next();

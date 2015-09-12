@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import zx.soft.sent.dao.domain.platform.RecordInfo;
+import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.threads.ApplyThreadPool;
 

@@ -14,13 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import zx.soft.sent.common.insight.TrueUserHelper;
+import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.insight.utils.QueryCallable;
-import zx.soft.sent.insight.utils.TrueUserHelper;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.domain.SimpleFacetInfo;
 import zx.soft.sent.solr.insight.RawType;
-import zx.soft.sent.solr.insight.Virtuals.Virtual;
 import zx.soft.sent.solr.query.QueryCore.Shards;
 import zx.soft.utils.string.ConcatMethod;
 import zx.soft.utils.string.StringConcatHelper;

@@ -6,13 +6,13 @@ import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
 
-import zx.soft.sent.dao.domain.platform.RecordInfo;
+import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.dao.persist.PersistCore;
 import zx.soft.sent.web.resource.PushRecordResource;
 
 /**
  * MySQL数据存储应用类
- * 
+ *
  * @author wanggang
  *
  */

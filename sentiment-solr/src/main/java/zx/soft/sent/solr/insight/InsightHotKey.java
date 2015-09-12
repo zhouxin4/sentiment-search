@@ -1,6 +1,5 @@
 package zx.soft.sent.solr.insight;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,20 +12,20 @@ import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import zx.soft.sent.common.insight.AreaCode;
+import zx.soft.sent.common.insight.TrueUserHelper;
+import zx.soft.sent.common.insight.UserDomain;
+import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.dao.insight.RiakInsight;
 import zx.soft.sent.solr.domain.QueryResult;
-import zx.soft.sent.solr.insight.Virtuals.Virtual;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.algo.TopN;
 import zx.soft.utils.algo.TopN.KeyValue;
-import zx.soft.utils.http.HttpClientDaoImpl;
-import zx.soft.utils.json.JsonNodeUtils;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.time.TimeUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultiset;
@@ -47,8 +46,6 @@ public class InsightHotKey {
 
 	private static KeyWordComputer kwc = new KeyWordComputer(NUM_EACH_POST);
 
-	public static final String VIRTUAL_URL = "http://192.168.32.20:8080/keyusers/virtualUser";
-	public static final String TRUE_USER = "http://192.168.32.20:8080/keyusers/trueUser/";
 	private RiakInsight insight = null;
 
 	public InsightHotKey() {
@@ -76,7 +73,7 @@ public class InsightHotKey {
 		current = TimeUtils.transCurrentTime(current, 0, 0, 0, 1);
 		for (AreaCode area : AreaCode.values()) {
 			String areaCode = area.getAreaCode();
-			List<UserDomain> trueUsers = getTrueUser(areaCode);
+			List<UserDomain> trueUsers = TrueUserHelper.getTrueUsers(areaCode);
 			for (UserDomain user : trueUsers) {
 				String trueUserId = user.getTureUserId();
 				for (int i = 0; i < 24; i++) {
@@ -118,7 +115,7 @@ public class InsightHotKey {
 		long last = TimeUtils.transCurrentTime(current, 0, 0, 0, -1);
 		params.setFq("timestamp:[" + TimeUtils.transToSolrDateStr(last) + " TO "
 				+ TimeUtils.transToSolrDateStr(current) + "]");
-		List<Virtual> virtuals = getVirtuals(trueUserId);
+		List<Virtual> virtuals = TrueUserHelper.getVirtuals(trueUserId);
 		if (virtuals.isEmpty()) {
 			return counts;
 		}
@@ -170,32 +167,6 @@ public class InsightHotKey {
 				counts.addAll(keys);
 			}
 		}
-	}
-
-	public List<Virtual> getVirtuals(String trueUser) {
-		String data = "{\"trueUserId\":\"" + trueUser + "\",\"page\":1,\"size\":100}";
-		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
-		long start = System.currentTimeMillis();
-		String response = httpclient.doPostAndGetResponse(VIRTUAL_URL, data);
-		logger.info("获取虚拟账号耗时: {}", System.currentTimeMillis() - start);
-		if (!"error".equals(response)) {
-			JsonNode node = JsonNodeUtils.getJsonNode(response, "response");
-			List<Virtual> virs = JsonUtils.parseJsonArray(node.toString(), Virtual.class);
-			return virs;
-		}
-		return new ArrayList<>();
-	}
-
-	public List<UserDomain> getTrueUser(String areaCode) {
-		String data = "{\"areaCode\":" + areaCode + "}";
-		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
-		String response = httpclient.doPostAndGetResponse(TRUE_USER, data);
-		if (!"error".equals(response)) {
-			JsonNode node = JsonNodeUtils.getJsonNode(response, "response");
-			List<UserDomain> virs = JsonUtils.parseJsonArray(node.toString(), UserDomain.class);
-			return virs;
-		}
-		return new ArrayList<>();
 	}
 
 	public static long getHourTime(long milli) {

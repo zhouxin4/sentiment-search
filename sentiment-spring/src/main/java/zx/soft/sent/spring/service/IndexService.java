@@ -9,12 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import zx.soft.sent.dao.domain.platform.RecordInfo;
+import zx.soft.sent.common.index.PostData;
+import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.dao.persist.PersistCore;
 import zx.soft.sent.solr.utils.RedisMQ;
 import zx.soft.sent.spring.domain.ErrorResponse;
 import zx.soft.sent.spring.domain.ErrorResponse.Builder;
-import zx.soft.sent.spring.domain.PostData;
 import zx.soft.sent.spring.domain.TokenUpdateData;
 import zx.soft.sent.spring.utils.StringCache;
 import zx.soft.utils.json.JsonUtils;

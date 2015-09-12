@@ -1,0 +1,20 @@
+ -- hbase 创建
+ create 'user_relation','cf'
+ 
+ -- hive表映射
+create external table user_relat (rowKey string, tu string, vu string, ts bigint, pl int, sid int, id string, tx string, cr string, cu string, ct bigint, cc string) stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' with serdeproperties("hbase.columns.mapping"=":key,cf:tu,cf:vu,cf:ts,cf:pl,cf:sid,cf:id,cf:tx,cf:cr,cf:cu,cf:ct,cf:cc") tblproperties ("hbase.table.name" = "user_relation");
+ 
+ -- impala 
+ INVALIDATE METADATA user_relat;
+ 
+ 
+ 
+ -- 查询关系人员
+SELECT cu , COUNT( cu ) AS num FROM user_relat  where tu='01012f62a89d5f8a6be12fb8595a2832' GROUP BY cu  ORDER BY num DESC  LIMIT 10;
+ 
+ -- 查询重点人员与关系人员之间关系密切的帖文
+ SELECT id,COUNT(id) AS num FROM user_relat where tu = 'b8e21e62cdf77059033bc78318a40c88' AND cu in ('紫夜瑾','刘军Nic','AiLeBoo') GROUP BY id ORDER BY num DESC LIMIT 10 OFFSET 0;
+ 
+ -- 查询帖文的评论信息 
+ SELECT cu,ct,cc FROM user_relat WHERE id='E0DF07621A49C087080A987F96AC3432' AND cu IN ('全球眼光','花小仙女','forwardslash') ORDER BY ct;
+ 
