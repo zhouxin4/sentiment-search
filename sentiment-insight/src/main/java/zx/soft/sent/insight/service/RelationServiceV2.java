@@ -9,6 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
@@ -16,12 +21,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import zx.soft.sent.common.insight.HbaseConstant;
+import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.core.impala.ImpalaConnPool;
 import zx.soft.sent.core.impala.ImpalaJdbc;
 import zx.soft.sent.insight.domain.BlogResponse;
 import zx.soft.sent.insight.domain.RelationRequest;
+import zx.soft.sent.insight.domain.RelationRequest.EndPoint;
+import zx.soft.sent.insight.domain.ResponseResult;
 import zx.soft.sent.solr.domain.QueryResult;
+import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.json.JsonUtils;
+import zx.soft.utils.log.LogbackUtil;
+import zx.soft.utils.string.ConcatMethod;
+import zx.soft.utils.string.StringConcatHelper;
 import zx.soft.utils.string.StringUtils;
 import zx.soft.utils.time.TimeUtils;
 
@@ -36,15 +48,19 @@ public class RelationServiceV2 {
 
 	private static Logger logger = LoggerFactory.getLogger(RelationServiceV2.class);
 
-	private static ImpalaConnPool impala = ImpalaConnPool.getPool(5, 5);
+	private static ImpalaConnPool impala = ImpalaConnPool.getPool(20, 5);
 
 	// 获取评论信息
-	public List<BlogResponse> getPostDetail(RelationRequest request) {
+	public ResponseResult getPostDetail(RelationRequest request) {
 		/**
 		 * SELECT cu,ct,cc FROM user_relat
 		 * WHERE id='E0DF07621A49C087080A987F96AC3432' AND cu IN ('全球眼光','花小仙女','forwardslash') ORDER BY ct;
 		 */
-		List<BlogResponse> responses = new ArrayList<>();
+		ResponseResult results = new ResponseResult();
+		//		results.setNumFound(getTotalCount(request));
+		Callable<Long> count = new CountCallable(request);
+		FutureTask<Long> numCount = new FutureTask<>(count);
+		new Thread(numCount).start();
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("SELECT " + HbaseConstant.COMMENT_USER + "," + HbaseConstant.COMMENT_TIME + ","
 				+ HbaseConstant.COMMENT_CONTEXT + " FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
@@ -58,29 +74,42 @@ public class RelationServiceV2 {
 		}
 		if (jdbc == null) {
 			logger.error("Impala连接请求超时！");
-			return responses;
+			return results;
 		}
-		ResultSet result = jdbc.Query(sBuilder.toString());
 		try {
+			ResultSet result = null;
 			try {
+				result = jdbc.Query(sBuilder.toString());
 				while (result.next()) {
 					BlogResponse response = new BlogResponse.ResponseBuilder()
 							.responseUser(result.getString(HbaseConstant.COMMENT_USER))
-							.responseTime(result.getString(HbaseConstant.COMMENT_TIME))
+							.responseTime(
+									TimeUtils.transToCommonDateStr(Long.parseLong(result
+											.getString(HbaseConstant.COMMENT_TIME))))
 							.responseContent(result.getString(HbaseConstant.COMMENT_CONTEXT)).build();
 
 					logger.info("record: {}", JsonUtils.toJsonWithoutPretty(response));
-					responses.add(response);
+					results.addResponse(response);
 				}
 			} finally {
-				result.close();
-				impala.checkIn(jdbc);
+				if (result != null) {
+					result.close();
+				}
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
+		} finally {
+			impala.checkIn(jdbc);
 		}
+		long numFound = 0;
+		try {
+			numFound = numCount.get(5, TimeUnit.SECONDS);
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			logger.error(e.getMessage());
+		}
+		results.setNumFound(numFound);
 
-		return responses;
+		return results;
 
 	}
 
@@ -92,16 +121,16 @@ public class RelationServiceV2 {
 		 *  GROUP BY id ORDER BY num DESC LIMIT 10 OFFSET 0;
 		 */
 		QueryResult queryResult = new QueryResult();
-		long numFound = getTotalCount(request);
-		queryResult.setNumFound(numFound);
-		if (numFound == 0) {
-			return queryResult;
-		}
+		queryResult.setNumFound(0l);
+		long st = System.currentTimeMillis();
+		Callable<Long> count = new CountCallable(request);
+		FutureTask<Long> numCount = new FutureTask<>(count);
+		new Thread(numCount).start();
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("SELECT " + HbaseConstant.ID + ", COUNT(" + HbaseConstant.ID + ") AS num FROM "
 				+ HbaseConstant.HIVE_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
-		sBuilder.append(" GROUP BY id ORDER BY num DESC LIMIT 10 OFFSET 0");
+		sBuilder.append(" GROUP BY id ORDER BY num DESC LIMIT " + request.getRows() + " OFFSET " + request.getStart());
 		ImpalaJdbc jdbc = null;
 		try {
 			jdbc = impala.checkOut();
@@ -111,44 +140,60 @@ public class RelationServiceV2 {
 			logger.error("Impala连接请求超时！");
 			return queryResult;
 		}
-		ResultSet result = jdbc.Query(sBuilder.toString());
+		long sTime = System.currentTimeMillis();
+		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
 		List<String> ids = new ArrayList<>();
 		try {
+			ResultSet result = null;
 			try {
+				result = jdbc.Query(sBuilder.toString());
 				while (result.next()) {
-					logger.info("id: {}", result.getString(HbaseConstant.ID));
-					ids.add(result.getString(HbaseConstant.ID));
+					String id = result.getString(HbaseConstant.ID);
+					logger.info("id: {}", id);
+					ids.add(id);
+					helper.add(id);
 				}
 			} finally {
-				result.close();
+				if (result != null) {
+					result.close();
+				}
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
-		}
-		if (ids.isEmpty()) {
+		} finally {
 			impala.checkIn(jdbc);
+		}
+		logger.info("获取发帖ID: {}", System.currentTimeMillis() - sTime);
+		if (ids.isEmpty()) {
 			return queryResult;
 		}
-		String sql = "SELECT DISTINCT cr FROM " + HbaseConstant.HIVE_TABLE + " WHERE id='%s'";
+		//		List<Callable<SolrDocument>> calls = new ArrayList<>();
+		//		for (String id : ids) {
+		//			calls.add(new SolrDocCallable(id));
+		//		}
+		//		List<SolrDocument> docs = AwesomeThreadPool.runCallables(10, calls);
+		QueryParams docParams = new QueryParams();
+		docParams.setQ("*:*");
+		docParams.setFq("id:(" + helper.getString() + ")");
+
+		QueryResult docResult = QueryCore.getInstance().queryData(docParams, false);
 		for (String id : ids) {
-			String crQuery = String.format(sql, id);
-			ResultSet crResult = jdbc.Query(crQuery);
-			try {
-				try {
-					while (crResult.next()) {
-						logger.info("record: {}", crResult.getString(HbaseConstant.COMPLETE_RECORD));
-						SolrDocument record = JsonUtils.getObject(crResult.getString(HbaseConstant.COMPLETE_RECORD),
-								SolrDocument.class);
-						queryResult.getResults().add(record);
-					}
-				} finally {
-					crResult.close();
+			for (SolrDocument doc : docResult.getResults()) {
+				if (id.equals(doc.getFieldValue("id"))) {
+					queryResult.getResults().add(doc);
+					break;
 				}
-			} catch (Exception e) {
-				logger.error(e.getMessage());
 			}
 		}
-		impala.checkIn(jdbc);
+
+		long numFound = 0;
+		try {
+			numFound = numCount.get(5, TimeUnit.SECONDS);
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			logger.error(e.getMessage());
+		}
+		queryResult.setNumFound(numFound);
+		logger.info("获取发帖耗时: {}", System.currentTimeMillis() - st);
 		return queryResult;
 	}
 
@@ -174,19 +219,23 @@ public class RelationServiceV2 {
 			logger.error("Impala连接请求超时！");
 			return nickCounts;
 		}
-		ResultSet result = jdbc.Query(sBuilder.toString());
 		try {
+			ResultSet result = null;
 			try {
+				result = jdbc.Query(sBuilder.toString());
 				while (result.next()) {
 					logger.info("nickname: {}, count: {}", result.getString("cu"), result.getLong("num"));
 					nickCounts.put(result.getString("cu"), result.getLong("num"));
 				}
 			} finally {
-				result.close();
-				impala.checkIn(jdbc);
+				if (result != null) {
+					result.close();
+				}
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
+		} finally {
+			impala.checkIn(jdbc);
 		}
 
 		return nickCounts;
@@ -205,44 +254,169 @@ public class RelationServiceV2 {
 				return -Longs.compare(o1.getValue(), o2.getValue());
 			}
 		});
-		if (hotRels.size() < 10) {
-			return hotRels;
-		}
-
-		return hotRels.subList(0, 10);
+		return hotRels;
 	}
 
 	public long getTotalCount(RelationRequest request) {
 		StringBuilder sBuilder = new StringBuilder();
-		sBuilder.append("SELECT COUNT(*) AS num FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
+		sBuilder.append("SELECT COUNT(");
+		if (request.getService().equals(EndPoint.POST)) {
+			sBuilder.append("DISTINCT " + HbaseConstant.ID);
+		} else {
+			sBuilder.append("*");
+		}
+		sBuilder.append(") AS num FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
 		ImpalaJdbc jdbc = null;
 		try {
 			jdbc = impala.checkOut();
 		} catch (InterruptedException e1) {
+			logger.error(LogbackUtil.expection2Str(e1));
 		}
 		if (jdbc == null) {
 			logger.error("Impala连接请求超时！");
 			return 0;
 		}
-		ResultSet result = jdbc.Query(sBuilder.toString());
 		try {
+			ResultSet result = null;
 			try {
+				result = jdbc.Query(sBuilder.toString());
 				while (result.next()) {
 					logger.info("count: {}", result.getLong("num"));
 					return result.getLong("num");
 				}
 			} finally {
 				result.close();
-				impala.checkIn(jdbc);
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
+		} finally {
+			impala.checkIn(jdbc);
 		}
 		return 0;
 	}
 
-	private String generateCONSQL(RelationRequest request) {
+	private static class CountCallable implements Callable<Long> {
+
+		private RelationRequest request;
+
+		public CountCallable(RelationRequest request) {
+			this.request = request;
+		}
+
+		@Override
+		public Long call() throws Exception {
+			StringBuilder sBuilder = new StringBuilder();
+			sBuilder.append("SELECT COUNT(");
+			if (request.getService().equals(EndPoint.POST)) {
+				sBuilder.append("DISTINCT " + HbaseConstant.ID);
+			} else {
+				sBuilder.append("*");
+			}
+			sBuilder.append(") AS num FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
+			sBuilder.append(generateCONSQL(request));
+			ImpalaJdbc jdbc = null;
+			try {
+				jdbc = impala.checkOut();
+			} catch (InterruptedException e1) {
+			}
+			if (jdbc == null) {
+				logger.error("Impala连接请求超时！");
+				return 0L;
+			}
+			ResultSet result = jdbc.Query(sBuilder.toString());
+			try {
+				try {
+					while (result.next()) {
+						logger.info("count: {}", result.getLong("num"));
+						return result.getLong("num");
+					}
+				} finally {
+					result.close();
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+			} finally {
+				impala.checkIn(jdbc);
+			}
+			return 0L;
+		}
+	}
+
+	private static class SolrDocCallable implements Callable<SolrDocument> {
+
+		private static final String SQL = "SELECT cr FROM " + HbaseConstant.HIVE_TABLE + " WHERE id='%s' LIMIT 1";
+
+		private String id;
+
+		public SolrDocCallable(String id) {
+			this.id = id;
+		}
+
+		@Override
+		public SolrDocument call() {
+			ImpalaJdbc jdbc = null;
+			try {
+				jdbc = impala.checkOut();
+			} catch (InterruptedException e1) {
+			}
+			if (jdbc == null) {
+				logger.error("Impala连接请求超时！");
+				return null;
+			}
+			String crQuery = String.format(SQL, id);
+			SolrDocument record = null;
+			try {
+				ResultSet crResult = null;
+				try {
+					crResult = jdbc.Query(crQuery);
+					while (crResult.next()) {
+						// 暂时保留
+						logger.info("record: {}", crResult.getString(HbaseConstant.COMMENT_CONTEXT));
+						record = JsonUtils.getObject(crResult.getString(HbaseConstant.COMMENT_CONTEXT),
+								SolrDocument.class);
+						if (record.getFieldValueMap().get("timestamp") != null) {
+							record.setField(
+									"timestamp",
+									TimeUtils.transToCommonDateStr(TimeUtils.transToSolrDateStr(Long.parseLong(record
+											.getFieldValueMap().get("timestamp").toString()))));
+						}
+						if (record.getFieldValueMap().get("lasttime") != null) {
+							record.setField(
+									"lasttime",
+									TimeUtils.transToCommonDateStr(TimeUtils.transToSolrDateStr(Long.parseLong(record
+											.getFieldValueMap().get("lasttime").toString()))));
+						}
+						if (record.getFieldValueMap().get("first_time") != null) {
+							record.setField(
+									"first_time",
+									TimeUtils.transToCommonDateStr(TimeUtils.transToSolrDateStr(Long.parseLong(record
+											.getFieldValueMap().get("first_time").toString()))));
+						}
+						if (record.getFieldValueMap().get("update_time") != null) {
+							record.setField(
+									"update_time",
+									TimeUtils.transToCommonDateStr(TimeUtils.transToSolrDateStr(Long.parseLong(record
+											.getFieldValueMap().get("update_time").toString()))));
+						}
+					}
+				} finally {
+					if (crResult != null) {
+						crResult.close();
+					}
+				}
+
+			} catch (Exception e) {
+				logger.error(LogbackUtil.expection2Str(e));
+			} finally {
+				impala.checkIn(jdbc);
+			}
+			return record;
+
+		}
+	}
+
+	private static String generateCONSQL(RelationRequest request) {
 
 		StringBuilder sBuilder = new StringBuilder();
 		switch (request.getService()) {
@@ -278,7 +452,7 @@ public class RelationServiceV2 {
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}
-				sBuilder.append(" AND ts BETWEEN" + startTime + "AND" + endTime);
+				sBuilder.append(" AND ts BETWEEN " + startTime + " AND " + endTime);
 			}
 			if (!request.getVirtuals().isEmpty()) {
 				sBuilder.append(" AND " + HbaseConstant.COMMENT_USER + " IN (");

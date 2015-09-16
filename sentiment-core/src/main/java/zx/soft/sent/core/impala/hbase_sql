@@ -2,7 +2,7 @@
  create 'user_relation','cf'
  
  -- hive表映射
-create external table user_relat (rowKey string, tu string, vu string, ts bigint, pl int, sid int, id string, tx string, cr string, cu string, ct bigint, cc string) stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' with serdeproperties("hbase.columns.mapping"=":key,cf:tu,cf:vu,cf:ts,cf:pl,cf:sid,cf:id,cf:tx,cf:cr,cf:cu,cf:ct,cf:cc") tblproperties ("hbase.table.name" = "user_relation");
+create external table user_relat (rowKey string, tu string, vu string, ts bigint, pl int, sid int, id string, tx string, cu string, ct bigint, cc string) stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' with serdeproperties("hbase.columns.mapping"=":key,cf:tu,cf:vu,cf:ts,cf:pl,cf:sid,cf:id,cf:tx,cf:cu,cf:ct,cf:cc") tblproperties ("hbase.table.name" = "user_relation");
  
  -- impala 
  INVALIDATE METADATA user_relat;

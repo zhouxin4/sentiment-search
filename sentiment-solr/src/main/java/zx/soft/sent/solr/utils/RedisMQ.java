@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Transaction;
 import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.dao.common.SentimentConstant;
 import zx.soft.utils.config.ConfigUtil;
@@ -66,16 +65,7 @@ public class RedisMQ {
 			return;
 		}
 		try {
-			jedis.watch(SentimentConstant.SENTIMENT_CACHE_KEY);
-			Transaction tx = jedis.multi();
-			tx.sadd(SentimentConstant.SENTIMENT_CACHE_KEY, members);
-			tx.exec();
-			jedis.unwatch();
-			// pipeline适用于批处理，管道比事务效率高
-			// 不使用dsicard会出现打开文件数太多，使用的话DISCARD without MULTI。
-			//			Pipeline p = jedis.pipelined();
-			//			p.sadd(CACHE_SENTIMENT_KEY, members);
-			//			p.sync();// 关闭pipeline
+			jedis.sadd(SentimentConstant.SENTIMENT_CACHE_KEY, members);
 		} catch (Exception e) {
 			logger.error("Exception:{},Records'size={}.", LogbackUtil.expection2Str(e), members.length);
 			if (jedis != null) {

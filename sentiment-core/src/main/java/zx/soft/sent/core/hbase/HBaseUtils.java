@@ -1,6 +1,7 @@
 package zx.soft.sent.core.hbase;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -87,6 +88,22 @@ public class HBaseUtils {
 	}
 
 	public static boolean put(String tableName, Put put) {
+		try {
+			HTableInterface table = null;
+			try {
+				table = conn.getTable(tableName);
+				table.put(put);
+				return true;
+			} finally {
+				table.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public static boolean put(String tableName, List<Put> put) {
 		try {
 			HTableInterface table = null;
 			try {

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 /**
+ * 关系分析请求
  * @author donglei
  */
 public class RelationRequest {

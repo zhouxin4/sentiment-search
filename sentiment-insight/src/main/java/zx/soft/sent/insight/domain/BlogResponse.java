@@ -5,8 +5,11 @@ package zx.soft.sent.insight.domain;
  */
 public class BlogResponse {
 
+	// 评论人
 	private String ru;
+	// 评论时间
 	private String rt;
+	// 评论内容
 	private String rc;
 
 	public String getRu() {

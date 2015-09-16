@@ -2,9 +2,9 @@ package zx.soft.sent.core.impala;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Properties;
 
 import zx.soft.utils.config.ConfigUtil;
@@ -29,16 +29,9 @@ public class ImpalaJdbc {
 
 	}
 
-	public ResultSet Query(String sqlStatement) {
-		ResultSet result = null;
-		try {
-			Statement statement = conn.createStatement();
-			result = statement.executeQuery(sqlStatement);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
+	public ResultSet Query(String sqlStatement) throws SQLException {
+		PreparedStatement statement = conn.prepareStatement(sqlStatement);
+		ResultSet result = statement.executeQuery();
 		return result;
 	}
 

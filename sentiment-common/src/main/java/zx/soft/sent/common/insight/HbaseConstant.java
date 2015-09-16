@@ -36,7 +36,7 @@ public class HbaseConstant {
 	public static final String TEXT = "tx";
 
 	// 发帖完整record
-	public static final String COMPLETE_RECORD = "cr";
+	//	public static final String COMPLETE_RECORD = "cr";
 
 	// 评论虚拟用户
 	public static final String COMMENT_USER = "cu";

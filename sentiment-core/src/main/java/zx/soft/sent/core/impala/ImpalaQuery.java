@@ -53,7 +53,7 @@ public class ImpalaQuery {
 		//		List<String> topN = ImpalaQuery.getTopNActiveUser(0);
 		//		System.out.println(topN.size());
 		//		System.out.println(ImpalaQuery.getMaxId());
-		final ImpalaConnPool pool = ImpalaConnPool.getPool(5, 10);
+		final ImpalaConnPool pool = ImpalaConnPool.getPool(10, 100);
 		for (int i = 0; i < 50; i++) {
 			new Thread(new Runnable() {
 

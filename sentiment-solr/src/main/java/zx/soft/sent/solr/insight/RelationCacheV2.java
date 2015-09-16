@@ -5,8 +5,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +15,7 @@ import zx.soft.sent.common.insight.TrueUserHelper;
 import zx.soft.sent.common.insight.UserDomain;
 import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.sent.core.hbase.HBaseUtils;
+import zx.soft.sent.core.hbase.HbaseDao;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.checksum.CheckSumUtils;
 import zx.soft.utils.codec.URLCodecUtils;
@@ -61,10 +60,6 @@ public class RelationCacheV2 {
 		}
 		HashMap<String, String> headers = new HashMap<String, String>();
 		headers.put("Content-Type", "application/json");
-		//		long endTime = System.currentTimeMillis();
-		//		long startTime = getStartTime(endTime, -30);
-		//		String timeFilter = "lasttime:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
-		//				+ TimeUtils.transToSolrDateStr(endTime) + "]";
 		for (AreaCode area : AreaCode.values()) {
 			String areaCode = area.getAreaCode();
 			List<UserDomain> trueUsers = TrueUserHelper.getTrueUsers(areaCode);
@@ -79,29 +74,33 @@ public class RelationCacheV2 {
 						String result = new HttpClientDaoImpl().doGet(url, headers);
 						List<Weibo> weibos = JsonUtils.parseJsonArray(result, Weibo.class);
 						for (Weibo weibo : weibos) {
-							logger.info(weibo.toString());
+							//							logger.info(weibo.toString());
 							if (!checkWeibo(weibo)) {
 								logger.info("跳过不正常微博ID: {}", weibo.getId());
 								continue;
 							}
 							RecordInfo weiboInfo = transWeiboToRecord(weibo);
 							logger.info(weiboInfo.toString());
+							PostDataHelper.getInstance().addRecord(JsonUtils.toJsonWithoutPretty(weiboInfo));
+
 							String commentUrl = String.format(COMMENTS, weibo.getId());
 							String commentResult = new HttpClientDaoImpl().doGet(commentUrl, headers);
 							List<Comment> comments = JsonUtils.parseJsonArray(commentResult, Comment.class);
 							for (Comment comment : comments) {
-								logger.info(comment.toString());
+								//								logger.info(comment.toString());
 								RecordInfo commentInfo = transCommentToRecord(comment);
+								PostDataHelper.getInstance().addRecord(JsonUtils.toJsonWithoutPretty(commentInfo));
 								logger.info(commentInfo.toString());
 								cacheOneBlogRelation(virtual, weiboInfo, commentInfo);
-								logger.info("存储关系: webId({}) -- > commentId({})", weiboInfo.getId(),
-										commentInfo.getId());
+								logger.info("存储关系: webId({}) -- > commentId({}),originId({})", weiboInfo.getId(),
+										commentInfo.getId(), commentInfo.getOriginal_id());
 							}
 						}
 					}
 				}
 			}
 		}
+		PostDataHelper.getInstance().flush();
 		// 关闭资源
 		QueryCore.getInstance().close();
 		HBaseUtils.close();
@@ -109,36 +108,51 @@ public class RelationCacheV2 {
 	}
 
 	private void cacheOneBlogRelation(Virtual virtual, RecordInfo weibo, RecordInfo comment) {
-		byte[] md5 = CheckSumUtils.md5sum(virtual.getTrueUser());
-		byte[] uuid = CheckSumUtils.md5sum(comment.getId());
-		byte[] rowKey = new byte[CheckSumUtils.MD5_LENGTH * 2];
-		int offset = 0;
-		offset = Bytes.putBytes(rowKey, offset, md5, 0, md5.length);
-		offset = Bytes.putBytes(rowKey, offset, uuid, 0, md5.length);
-
-		Put put = new Put(rowKey);
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.TRUE_USER),
-				Bytes.toBytes(virtual.getTrueUser()));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.TIMESTAMP),
-				Bytes.toBytes(weibo.getTimestamp() + ""));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.VIRTUAL),
-				Bytes.toBytes(weibo.getNickname()));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.PLATFORM),
-				Bytes.toBytes(weibo.getPlatform() + ""));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.SOURCE_ID),
-				Bytes.toBytes(weibo.getSource_id() + ""));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.ID), Bytes.toBytes(weibo.getId()));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.TEXT),
-				Bytes.toBytes(weibo.getTitle() + "            " + weibo.getContent()));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMPLETE_RECORD),
-				Bytes.toBytes(JsonUtils.toJsonWithoutPretty(weibo)));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMMENT_USER),
-				Bytes.toBytes(comment.getNickname()));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMMENT_TIME),
-				Bytes.toBytes(comment.getTimestamp() + ""));
-		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMMENT_CONTEXT),
-				Bytes.toBytes(comment.getContent()));
-		HBaseUtils.put(HbaseConstant.TABLE_NAME, put);
+		HbaseDao dao = new HbaseDao(HbaseConstant.TABLE_NAME, 10);
+		//		byte[] md5 = CheckSumUtils.md5sum(virtual.getTrueUser());
+		//		byte[] uuid = CheckSumUtils.md5sum(comment.getId());
+		//		byte[] rowKey = new byte[CheckSumUtils.MD5_LENGTH * 2];
+		//		int offset = 0;
+		//		offset = Bytes.putBytes(rowKey, offset, md5, 0, md5.length);
+		//		offset = Bytes.putBytes(rowKey, offset, uuid, 0, md5.length);
+		byte[] rowKey = CheckSumUtils.md5sum(virtual.getTrueUser() + comment.getId());
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TRUE_USER, virtual.getTrueUser());
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TIMESTAMP, weibo.getTimestamp() + "");
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.VIRTUAL, weibo.getNickname());
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.PLATFORM, weibo.getPlatform() + "");
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.SOURCE_ID, weibo.getSource_id() + "");
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.ID, weibo.getId());
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TEXT, weibo.getTitle() + "            "
+				+ weibo.getContent());
+		//		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMPLETE_RECORD,
+		//				JsonUtils.toJsonWithoutPretty(weibo));
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_USER, comment.getNickname());
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_TIME, comment.getTimestamp() + "");
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_CONTEXT, comment.getContent());
+		//		Put put = new Put(rowKey);
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.TRUE_USER),
+		//				Bytes.toBytes(virtual.getTrueUser()));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.TIMESTAMP),
+		//				Bytes.toBytes(weibo.getTimestamp() + ""));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.VIRTUAL),
+		//				Bytes.toBytes(weibo.getNickname()));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.PLATFORM),
+		//				Bytes.toBytes(weibo.getPlatform() + ""));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.SOURCE_ID),
+		//				Bytes.toBytes(weibo.getSource_id() + ""));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.ID), Bytes.toBytes(weibo.getId()));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.TEXT),
+		//				Bytes.toBytes(weibo.getTitle() + "            " + weibo.getContent()));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMPLETE_RECORD),
+		//				Bytes.toBytes(JsonUtils.toJsonWithoutPretty(weibo)));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMMENT_USER),
+		//				Bytes.toBytes(comment.getNickname()));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMMENT_TIME),
+		//				Bytes.toBytes(comment.getTimestamp() + ""));
+		//		put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMMENT_CONTEXT),
+		//				Bytes.toBytes(comment.getContent()));
+		//		HBaseUtils.put(HbaseConstant.TABLE_NAME, put);
+		dao.flushPuts();
 	}
 
 	public RecordInfo transWeiboToRecord(Weibo weibo) {
