@@ -23,6 +23,9 @@ public class SentimentConstant {
 	// 與情数据消息队列
 	public static final String SENTIMENT_CACHE_KEY = "sent.cache.records";
 
+	// CDH5 缓存数据队列
+	public static final String CDH5_CACHE_RECORDS = "cdh5.cache.records";
+
 	// 存储记录的id，主要用于数据库写入去重
 	public static final String SENT_KEY_INSERTED = "sent:key:inserted";
 

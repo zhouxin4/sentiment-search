@@ -81,6 +81,30 @@ public class RedisMQ {
 	}
 
 	/**
+	 * 添加数据，members不能为空
+	 */
+	public synchronized void addRecord(String key, String... members) {
+		Jedis jedis = getJedis();
+		if (jedis == null) {
+			return;
+		}
+		try {
+			jedis.sadd(key, members);
+		} catch (Exception e) {
+			logger.error("Exception:{},Records'size={}.", LogbackUtil.expection2Str(e), members.length);
+			if (jedis != null) {
+				pool.returnBrokenResource(jedis);
+				jedis = null;
+			}
+		} finally {
+			// 这里很重要，一旦拿到的jedis实例使用完毕，必须要返还给池中
+			if (jedis != null && jedis.isConnected()) {
+				pool.returnResource(jedis);
+			}
+		}
+	}
+
+	/**
 	 * 获取集合大小
 	 */
 	public synchronized long getSetSize() {
@@ -121,6 +145,37 @@ public class RedisMQ {
 			for (int i = 0; (i < 10000) && (value != null); i++) {
 				records.add(value);
 				value = jedis.spop(SentimentConstant.SENTIMENT_CACHE_KEY);
+			}
+			logger.info("Records'size = {}", records.size());
+		} catch (Exception e) {
+			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
+			if (jedis != null) {
+				pool.returnBrokenResource(jedis);
+				jedis = null;
+			}
+		} finally {
+			if (jedis != null && jedis.isConnected()) {
+				pool.returnResource(jedis);
+			}
+		}
+		return records;
+	}
+
+	/**
+	 * 获取数据
+	 */
+	public synchronized List<String> getRecords(String key) {
+		List<String> records = new ArrayList<>();
+		Jedis jedis = getJedis();
+		if (jedis == null) {
+			return records;
+		}
+		try {
+			String value = jedis.spop(key);
+			//			while (value != null) {
+			for (int i = 0; (i < 10000) && (value != null); i++) {
+				records.add(value);
+				value = jedis.spop(key);
 			}
 			logger.info("Records'size = {}", records.size());
 		} catch (Exception e) {

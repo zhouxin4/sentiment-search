@@ -15,6 +15,7 @@ import zx.soft.sent.dao.domain.allinternet.InternetTask;
 import zx.soft.sent.dao.insight.RiakInsight;
 import zx.soft.sent.dao.oracle.OracleJDBC;
 import zx.soft.sent.solr.query.QueryCore;
+import zx.soft.sent.solr.utils.RedisMQ;
 import zx.soft.utils.checksum.CheckSumUtils;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.time.TimeUtils;
@@ -35,6 +36,8 @@ public class OriginUpdate {
 	private QueryCore search;
 	// 持久化类
 	private RiakInsight riakAccess;
+	// 缓存Redis
+	private RedisMQ redisMQ;
 
 	// 查询需要更新缓存信息的任务
 	public static final String QUERY_EXECUTED = "select id,cjzid,cjsj,gjc,jssj,rwzt from jhrw_rwdd where bz=1 and gsfl=5 and rwzt in (0, 1)";
@@ -43,6 +46,7 @@ public class OriginUpdate {
 		this.oracleJDBC = new OracleJDBC();
 		this.search = QueryCore.getInstance();
 		this.riakAccess = new RiakInsight();
+		this.redisMQ = new RedisMQ();
 	}
 
 	public static void main(String[] args) throws SQLException {
@@ -69,9 +73,10 @@ public class OriginUpdate {
 				return;
 			}
 			logger.info("Updating tasks' size={}", tasks.size());
-			ExecutorService executor = Executors.newFixedThreadPool(10);
+			ExecutorService executor = Executors.newFixedThreadPool(5);
 			for (Entry<String, InternetTask> tmp : tasks.entrySet()) {
-				executor.execute(new OriginUpdateRunnable(search, riakAccess, tmp.getValue()));
+				//				executor.execute(new OriginUpdateRunnable(search, riakAccess, tmp.getValue()));
+				executor.execute(new OriginCacheRedisRunnable(search, redisMQ, tmp.getValue()));
 			}
 			executor.shutdown();
 			while (!executor.isTerminated()) {

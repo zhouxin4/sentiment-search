@@ -15,10 +15,12 @@ import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +69,7 @@ public class QueryCore {
 		cloudServer.setZkConnectTimeout(Integer.parseInt(props.getProperty("zookeeper_connect_timeout")));
 		cloudServer.setZkClientTimeout(Integer.parseInt(props.getProperty("zookeeper_client_timeout")));
 		cloudServer.connect();
+
 	}
 
 	public static QueryCore getInstance() {
@@ -77,32 +80,55 @@ public class QueryCore {
 	 * 测试函数
 	 */
 	public static void main(String[] args) {
-		QueryCore search = new QueryCore();
+		QueryCore search = QueryCore.getInstance();
 		QueryParams queryParams = new QueryParams();
-		// q:关键词
-		queryParams.setQ("\"利益\" OR \"财富\" OR \"资源\" OR \"垄断\" OR \"独占\"");
-		//		queryParams.setFq("source_id:607202e6603cb23b3d3173d4ca20a886");
+		queryParams.setQ("*:*");
+		queryParams.setFq("id:42009F64DB89C1BC0BEA2A046B87BF3D");
 		//timestamp:[2014-04-22T00:00:00Z TO 2014-04-23T00:00:00Z]
 		//		queryParams.setSort("timestamp:desc"); // lasttime:desc
 		//		queryParams.setStart(0);
-		queryParams.setRows(0);
+		//		queryParams.setRows(0);
 		//		queryParams.setWt("json");
 		//		queryParams.setFl(""); // nickname,content
 		//		queryParams.setHlfl("title,content");
 		//		queryParams.setHlsimple("red");
 		//		queryParams.setFacetQuery("");
-		queryParams
-				.setFq("timestamp:[2015-06-29T13:48:02Z TO 2015-07-30T13:48:05Z];"
-						+ "(nickname:湖南株洲炎陵艾琼娜 AND source_id:7) OR (nickname:王章义桐城渔夫 AND source_id:7) OR (nickname:ZAKER新闻频道 AND source_id:7) OR (nickname:梦想成真的花儿 AND source_id:7) OR (nickname:内涵冷笑话 AND source_id:8) OR (nickname:绝不放弃 AND source_id:8) OR (nickname:关树学 AND source_id:8) OR (nickname:漠然 AND source_id:8) OR (nickname:刷淘宝信誉先刷后付款点我 AND source_id:8)");
 		//		queryParams.setFacetRange("timestamp");
 		//		queryParams.setFacetRangeStart("2015-07-10T00:00:00Z");
 		//		queryParams.setFacetRangeEnd("2015-07-13T00:00:00Z");
 		//		queryParams.setFacetRangeGap("+1HOUR");
 		//		queryParams.setFacetField("source_id");
-		QueryResult result = search.queryData(queryParams, true);
+		QueryResponse result = search.queryDataWithoutView(queryParams, true);
+		//		List<SolrInputDocument> docs = new ArrayList<>();
+		//		for (SolrDocument doc : result.getResults()) {
+		//			docs.add(transSolrDocumentToInputDocument(doc));
+		//		}
+		//		search.addDocToSolr(docs);
+		List<String> records = new ArrayList<>();
+		for (SolrDocument doc : result.getResults()) {
+			records.add(JsonUtils.toJsonWithoutPretty(doc));
+		}
+
 		System.out.println(JsonUtils.toJson(result));
 		//		search.deleteQuery("timestamp:[2000-11-27T00:00:00Z TO 2014-09-30T23:59:59Z]");
 		search.close();
+	}
+
+	public void addDocToSolr(List<SolrInputDocument> docs) {
+		try {
+			cloudServer.add(docs);
+			cloudServer.commit();
+		} catch (RemoteSolrException | SolrServerException | IOException e) {
+			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
+		}
+	}
+
+	public static SolrInputDocument transSolrDocumentToInputDocument(SolrDocument doc) {
+		SolrInputDocument input = new SolrInputDocument();
+		for (String field : doc.getFieldNames()) {
+			input.setField(field, doc.getFieldValue(field));
+		}
+		return input;
 	}
 
 	/**
@@ -153,6 +179,23 @@ public class QueryCore {
 		return fields.getValues();
 	}
 
+	public QueryResponse queryDataWithoutView(QueryParams queryParams, boolean isPlatformTrans) {
+		SolrQuery query = getSolrQuery(queryParams);
+		QueryResponse queryResponse = null;
+		try {
+			queryResponse = cloudServer.query(query, METHOD.POST);
+			// GET方式的时候所有查询条件都是拼装到url上边的，url过长当然没有响应，必然中断talking了
+			//			queryResponse = server.query(query, METHOD.GET);
+		} catch (SolrServerException e) {
+			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
+			throw new RuntimeException(e);
+		}
+		if (queryResponse == null) {
+			logger.error("no response!");
+			throw new SpiderSearchException("no response!");
+		}
+		return queryResponse;
+	}
 
 	/**
 	 * 根据多条件查询结果数据
@@ -365,7 +408,7 @@ public class QueryCore {
 			}
 			for (String sort : sortStr.split(",")) {
 				List<String> parterns = RegexUtils.findMatchStrs(sort, "\\((\\d+)\\)", false);
-				if(!parterns.isEmpty()) {
+				if (!parterns.isEmpty()) {
 					int tmp = Integer.parseInt(parterns.get(0));
 					sort = sort.replaceAll("\\(" + parterns.get(0) + "\\)", funcs.get(tmp));
 				}
@@ -415,7 +458,7 @@ public class QueryCore {
 			}
 		}
 
-		if(queryParams.getFacetRange() != "") {
+		if (queryParams.getFacetRange() != "") {
 			query.setFacet(true);
 			query.set("facet.range", queryParams.getFacetRange());
 			query.set("f." + queryParams.getFacetRange() + ".facet.range.start", queryParams.getFacetRangeStart());
@@ -495,6 +538,7 @@ public class QueryCore {
 			this.params = params;
 			this.isPlatformTrans = isPlatformTrans;
 		}
+
 		@Override
 		public QueryResult call() throws Exception {
 			final SolrQuery query = getSolrQuery(this.params);
