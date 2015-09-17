@@ -1,7 +1,6 @@
 package zx.soft.sent.insight.service;
 
 import java.sql.ResultSet;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -74,6 +73,13 @@ public class RelationServiceV2 {
 		}
 		if (jdbc == null) {
 			logger.error("Impala连接请求超时！");
+			long numFound = 0;
+			try {
+				numFound = numCount.get(5, TimeUnit.SECONDS);
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				logger.error(e.getMessage());
+			}
+			results.setNumFound(numFound);
 			return results;
 		}
 		try {
@@ -131,6 +137,7 @@ public class RelationServiceV2 {
 				+ HbaseConstant.HIVE_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
 		sBuilder.append(" GROUP BY id ORDER BY num DESC LIMIT " + request.getRows() + " OFFSET " + request.getStart());
+		logger.info("查询发帖: {}", sBuilder.toString());
 		ImpalaJdbc jdbc = null;
 		try {
 			jdbc = impala.checkOut();
@@ -138,6 +145,13 @@ public class RelationServiceV2 {
 		}
 		if (jdbc == null) {
 			logger.error("Impala连接请求超时！");
+			long numFound = 0;
+			try {
+				numFound = numCount.get(5, TimeUnit.SECONDS);
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				logger.error(e.getMessage());
+			}
+			queryResult.setNumFound(numFound);
 			return queryResult;
 		}
 		long sTime = System.currentTimeMillis();
@@ -164,26 +178,26 @@ public class RelationServiceV2 {
 			impala.checkIn(jdbc);
 		}
 		logger.info("获取发帖ID: {}", System.currentTimeMillis() - sTime);
-		if (ids.isEmpty()) {
-			return queryResult;
-		}
-		//		List<Callable<SolrDocument>> calls = new ArrayList<>();
-		//		for (String id : ids) {
-		//			calls.add(new SolrDocCallable(id));
-		//		}
-		//		List<SolrDocument> docs = AwesomeThreadPool.runCallables(10, calls);
-		QueryParams docParams = new QueryParams();
-		docParams.setQ("*:*");
-		docParams.setFq("id:(" + helper.getString() + ")");
+		if (!ids.isEmpty()) {
+			//			List<Callable<SolrDocument>> calls = new ArrayList<>();
+			//		for (String id : ids) {
+			//			calls.add(new SolrDocCallable(id));
+			//		}
+			//		List<SolrDocument> docs = AwesomeThreadPool.runCallables(10, calls);
+			QueryParams docParams = new QueryParams();
+			docParams.setQ("*:*");
+			docParams.setFq("id:(" + helper.getString() + ")");
 
-		QueryResult docResult = QueryCore.getInstance().queryData(docParams, false);
-		for (String id : ids) {
-			for (SolrDocument doc : docResult.getResults()) {
-				if (id.equals(doc.getFieldValue("id"))) {
-					queryResult.getResults().add(doc);
-					break;
+			QueryResult docResult = QueryCore.getInstance().queryData(docParams, false);
+			for (String id : ids) {
+				for (SolrDocument doc : docResult.getResults()) {
+					if (id.equals(doc.getFieldValue("id"))) {
+						queryResult.getResults().add(doc);
+						break;
+					}
 				}
 			}
+
 		}
 
 		long numFound = 0;
@@ -315,6 +329,7 @@ public class RelationServiceV2 {
 			}
 			sBuilder.append(") AS num FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
 			sBuilder.append(generateCONSQL(request));
+			logger.info("Count SQL : {}", sBuilder.toString());
 			ImpalaJdbc jdbc = null;
 			try {
 				jdbc = impala.checkOut();
@@ -445,11 +460,9 @@ public class RelationServiceV2 {
 				int ri = timestamp.indexOf("TO");
 				int lf = timestamp.indexOf("]");
 				try {
-					long lTime = TimeUtils.tranSolrDateStrToMilli(timestamp.substring(li + 1, ri).trim());
-					startTime = TimeUtils.getZeroHourTime(lTime);
-					long rTime = TimeUtils.tranSolrDateStrToMilli(timestamp.substring(ri + 2, lf).trim());
-					endTime = TimeUtils.getZeroHourTime(rTime);
-				} catch (ParseException e) {
+					startTime = TimeUtils.tranSolrDateStrToMilli(timestamp.substring(li + 1, ri).trim());
+					endTime = TimeUtils.tranSolrDateStrToMilli(timestamp.substring(ri + 2, lf).trim());
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				sBuilder.append(" AND ts BETWEEN " + startTime + " AND " + endTime);

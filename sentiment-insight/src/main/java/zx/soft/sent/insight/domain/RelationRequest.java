@@ -68,7 +68,7 @@ public class RelationRequest {
 		System.out.println(str);
 		str = "{\"service\":\"POST\",\"trueUserId\":\"01012f62a89d5f8a6be12fb8595a2832\",\"virtuals\":[\"全球眼光\",\"forwardslash\",\"花小仙女\",\"村口胡大爷哇\",\"-東墻\",\"了了Miracle\",\"钟国仁是初声0000\"],\"platform\":3,\"source_id\":7,\"rows\":10,\"start\":0}";
 		RelationRequest request2 = JsonUtils.getObject(str, RelationRequest.class);
-		System.out.println(request2.getService());
+		System.out.println(JsonUtils.toJsonWithoutPretty(request2));
 	}
 
 	public EndPoint getService() {
