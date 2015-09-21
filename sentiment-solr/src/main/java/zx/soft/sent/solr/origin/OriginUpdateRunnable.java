@@ -4,7 +4,7 @@ import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.core.domain.QueryParams;
+import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.dao.domain.allinternet.InternetTask;
 import zx.soft.sent.dao.insight.RiakInsight;
 import zx.soft.sent.solr.domain.QueryResult;

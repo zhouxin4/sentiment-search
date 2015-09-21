@@ -19,6 +19,11 @@ public class RecentNList<T> {
 		this.num = n;
 	}
 
+	@Override
+	public String toString() {
+		return "RecentNList:Length :" + objects.size();
+	}
+
 	public void addElement(T e) {
 		if (objects.size() < num) {
 			objects.add(0, e);

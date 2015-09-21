@@ -2,6 +2,7 @@ package zx.soft.sent.solr.driver;
 
 import zx.soft.sent.solr.allinternet.TaskUpdate;
 import zx.soft.sent.solr.firstpage.FirstPageRun;
+import zx.soft.sent.solr.firstpage.NegativeRecordsRun;
 import zx.soft.sent.solr.index.ImportRedisToSC;
 import zx.soft.sent.solr.insight.InsightHotKey;
 import zx.soft.sent.solr.insight.RelationCacheV2;
@@ -54,6 +55,9 @@ public class SentSolrDriver {
 			pgd.addClass("originUpdate", OriginUpdate.class, "定时更新溯源任务的缓存");
 
 			pgd.addClass("relationCacheV2", RelationCacheV2.class, "定时更新博文关系");
+			// 在hefei06机器上运行
+			pgd.addClass("negativeRecordsRun", NegativeRecordsRun.class, "定时缓存负面信息关系");
+
 			pgd.driver(args);
 			// Success
 			exitCode = 0;

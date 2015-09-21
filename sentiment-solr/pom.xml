@@ -47,6 +47,16 @@
 			<groupId>zx.soft</groupId>
 			<artifactId>common-utils</artifactId>
 			<version>1.2.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>fr.inria.powerapi.sensor</groupId>
+					<artifactId>sensor-cpu-sigar</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.restlet.jse</groupId>
+					<artifactId>org.restlet.ext.jackson</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -86,16 +96,6 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-		</dependency>
-		<!-- JSON包 -->
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.9.13</version><!--$NO-MVN-MAN-VER$ -->
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-core-asl</artifactId>
 		</dependency>
 		<!-- Solr包 -->
 		<dependency>

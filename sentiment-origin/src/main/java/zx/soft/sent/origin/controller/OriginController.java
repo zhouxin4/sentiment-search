@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import zx.soft.sent.core.domain.ErrorResponse;
+import zx.soft.sent.common.domain.ErrorResponse;
+import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.origin.service.OriginService;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.string.StringUtils;
@@ -84,9 +85,50 @@ public class OriginController {
 			logger.error("Exception: {}", LogbackUtil.expection2Str(e));
 			return new ErrorResponse.Builder(-1, "params error!").build();
 		}
-		int start = Integer.parseInt(request.getParameter("start") == null ? "0" : request.getParameter("start"));
-		int rows = Integer.parseInt(request.getParameter("rows") == null ? "10" : request.getParameter("rows"));
-		return originService.getOriginPosts(key, start, rows);
+		QueryParams queryParams = new QueryParams();
+		queryParams.setQ(request.getParameter("q") == null ? "*:*" : request.getParameter("q"));
+		queryParams.setFq(request.getParameter("fq") == null ? "" : request.getParameter("fq"));
+		queryParams.setSort(request.getParameter("sort") == null ? "" : request.getParameter("sort"));
+		queryParams.setStart(request.getParameter("start") == null ? 0
+				: Integer.parseInt(request.getParameter("start")));
+		queryParams.setRows(request.getParameter("rows") == null ? 10 : Integer.parseInt(request.getParameter("rows")));
+		queryParams.setFl(request.getParameter("fl") == null ? "" : request.getParameter("fl"));
+		queryParams.setQop("OR");
+		queryParams.setFq(queryParams.getFq() + ";cache_type:1;cache_id:" + key);
+		logger.info(queryParams.toString());
+		return originService.getOriginPosts(queryParams);
+	}
+
+	@RequestMapping(value = "/trend", method = RequestMethod.GET)
+	@ResponseStatus(HttpStatus.CREATED)
+	public @ResponseBody Object getPostsResult(HttpServletRequest request) {
+		String key = request.getParameter("key");
+		try {
+			Preconditions.checkArgument(key != null && !key.isEmpty(), "Params `key` is null.");
+		} catch (IllegalArgumentException e) {
+			logger.error("Exception: {}", LogbackUtil.expection2Str(e));
+			return new ErrorResponse.Builder(-1, "params error!").build();
+		}
+
+		return originService.getOriginTrends(key);
+	}
+
+	@RequestMapping(value = "/negative", method = RequestMethod.GET)
+	@ResponseStatus(HttpStatus.CREATED)
+	public @ResponseBody Object getNegativeResult(HttpServletRequest request) {
+		QueryParams queryParams = new QueryParams();
+		queryParams.setQ(request.getParameter("q") == null ? "*:*" : request.getParameter("q"));
+		queryParams.setFq(request.getParameter("fq") == null ? "" : request.getParameter("fq"));
+		queryParams.setSort(request.getParameter("sort") == null ? "" : request.getParameter("sort"));
+		queryParams.setStart(request.getParameter("start") == null ? 0
+				: Integer.parseInt(request.getParameter("start")));
+		queryParams.setRows(request.getParameter("rows") == null ? 10 : Integer.parseInt(request.getParameter("rows")));
+		queryParams.setQop("OR");
+		queryParams.setFq(queryParams.getFq() + ";cache_type:2");
+		queryParams.setFl(request.getParameter("fl") == null ? "" : request.getParameter("fl"));
+		queryParams.setFacetField(request.getParameter("facetField") == null ? "" : request.getParameter("facetField"));
+		logger.info(queryParams.toString());
+		return originService.getOriginPosts(queryParams);
 	}
 
 }

@@ -2,7 +2,6 @@ package zx.soft.sent.solr.firstpage;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,8 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.negative.sentiment.core.NegativeClassify;
-import zx.soft.sent.dao.firstpage.FirstPagePersistable;
-import zx.soft.sent.dao.firstpage.RiakFirstPage;
+import zx.soft.sent.common.domain.SentimentConstant;
+import zx.soft.sent.solr.utils.RedisMQ;
 import zx.soft.utils.algo.TopN;
 import zx.soft.utils.checksum.CheckSumUtils;
 import zx.soft.utils.json.JsonUtils;
@@ -26,21 +25,18 @@ import zx.soft.utils.sort.InsertSort;
  * OA首页信息定时分析：hefei07
  *
  * 运行目录：/home/zxdfs/run-work/timer/oa-firstpage
- * 注： 老版本访问数据库firstpagerun、firstpageharmfulRun;分别运行在oa-firstpage、oa-firstpageharmful
- *     *中间状态oa-firstpage仍然保留数据库的版本firstpagerun。firstpagerun、firstpageharmfulRun合并部署在oa-firstpageharmful
- *     最终状态： 无oa-firstpageharmful，合并后部署在oa-firstpage
  * 运行命令：./firstpage_timer.sh &
  *
  * @author donglei
  *
  */
-public class FirstPageRun {
+public class NegativeRecordsRun {
 
-	private static Logger logger = LoggerFactory.getLogger(FirstPageRun.class);
+	private static Logger logger = LoggerFactory.getLogger(NegativeRecordsRun.class);
 
 	private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd,HH");
 
-	public FirstPageRun() {
+	public NegativeRecordsRun() {
 		//
 	}
 
@@ -48,7 +44,7 @@ public class FirstPageRun {
 	 * 主函数
 	 */
 	public static void main(String[] args) {
-		FirstPageRun firstPageRun = new FirstPageRun();
+		NegativeRecordsRun firstPageRun = new NegativeRecordsRun();
 		try {
 			firstPageRun.run();
 		} catch (Exception e) {
@@ -58,58 +54,20 @@ public class FirstPageRun {
 
 	public void run() {
 		logger.info("Starting query OA-FirstPage data...");
-		//		FirstPagePersistable firstPage = new FirstPage(MybatisConfig.ServerEnum.sentiment);
-		FirstPagePersistable firstPage = new RiakFirstPage();
 		OAFirstPage oafirstPage = new OAFirstPage();
 		NegativeClassify negativeClassify = new NegativeClassify();
-		/**
-		 * 1、统计当前时间各类数据的总量
-		 */
-		HashMap<String, Long> currentPlatformSum = oafirstPage.getCurrentPlatformSum();
-		firstPage.insertFirstPage(1, timeStrByHour(), JsonUtils.toJsonWithoutPretty(currentPlatformSum));
-		/**
-		 * 2、统计当天各类数据的进入量，其中day=0表示当天的数据
-		 */
-		HashMap<String, Long> todayPlatformInputSum = oafirstPage.getTodayPlatformInputSum(0);
-		firstPage.insertFirstPage(2, timeStrByHour(), JsonUtils.toJsonWithoutPretty(todayPlatformInputSum));
-		/**
-		 * 4、根据当天的微博数据，分别统计0、3、6、9、12、15、18、21时刻的四大微博数据进入总量；
-		 * 即从0点开始，每隔3个小时统计以下，如果当前的小时在这几个时刻内就统计，否则不统计。
-		 */
-		int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-		if (hour % 3 == 0) {
-			HashMap<String, Long> todayWeibosSum = oafirstPage.getTodayWeibosSum(0, hour);
-			firstPage.insertFirstPage(4, timeStrByHour(), JsonUtils.toJsonWithoutPretty(todayWeibosSum));
+		RedisMQ redisMQ = new RedisMQ();
+
+		List<SolrDocument> negativeRecordsForum = oafirstPage.getHarmfulRecords_N("1,2,3,4,7,10", 0, 50);
+		negativeRecordsForum = NegativeRecordsRun
+				.getNewTopNNegativeRecords(negativeClassify, negativeRecordsForum, 100);
+		List<String> jsonDocs = new ArrayList<>();
+		for (SolrDocument doc : negativeRecordsForum) {
+			jsonDocs.add(JsonUtils.toJsonWithoutPretty(doc));
 		}
-		/**
-		 * 5、对当天的论坛和微博进入数据进行负面评分，并按照分值推送最大的签20条内容，每小时推送一次。
-		 * @param platform:论坛-2,微博-3
-		 */
-		List<SolrDocument> negativeRecordsForum = oafirstPage.getNegativeRecords(2, 0, 10);
-		List<SolrDocument> negativeRecordsWeibo = oafirstPage.getNegativeRecords(3, 0, 10);
-		negativeRecordsForum = getTopNNegativeRecords(negativeClassify, negativeRecordsForum, 20);
-		negativeRecordsWeibo = getTopNNegativeRecords(negativeClassify, negativeRecordsWeibo, 20);
-		firstPage.insertFirstPage(52, timeStrByHour(), JsonUtils.toJsonWithoutPretty(negativeRecordsForum));
-		firstPage.insertFirstPage(53, timeStrByHour(), JsonUtils.toJsonWithoutPretty(negativeRecordsWeibo));
-
-		/**
-		 * 对当天的各平台进入数据进行负面评分，并按照分值推送最大的签20条内容，每小时推送一次。
-		 */
-		/*for (int i = 1; i < SentimentConstant.PLATFORM_ARRAY.length; i++) {
-			logger.info("Retriving platform:{}", i);
-			List<SolrDocument> negativeRecordsForum = oafirstPage.getNegativeRecords(i, 0, 30);
-			negativeRecordsForum = FirstPageRun.getTopNNegativeRecords(negativeClassify, negativeRecordsForum, 50);
-			firstPage.insertFirstPage(i, FirstPageRun.timeStrByHour(),
-					JsonUtils.toJsonWithoutPretty(negativeRecordsForum));
-		}*/
-
-		negativeRecordsForum = oafirstPage.getHarmfulRecords("1,2,3,4,7,10", 0, 30);
-		negativeRecordsForum = FirstPageRun.getNewTopNNegativeRecords(negativeClassify, negativeRecordsForum, 50);
-		firstPage.insertFirstPage(0, FirstPageRun.timeStrByHour(), JsonUtils.toJsonWithoutPretty(negativeRecordsForum));
-		//		System.out.println(JsonUtils.toJson(negativeRecordsForum));
+		redisMQ.addRecord(SentimentConstant.CDH5_CACHE_RECORDS, jsonDocs.toArray(new String[jsonDocs.size()]));
 
 		// 关闭资源
-		firstPage.close();
 		negativeClassify.cleanup();
 		oafirstPage.close();
 		logger.info("Finishing query OA-FirstPage data...");
@@ -223,7 +181,7 @@ public class FirstPageRun {
 			float score = negativeClassify.getTextScore(str);
 			//		int rate = str.length() / 20 + 1;
 			int rate = (int) Math.log10(str.length()) + 1;
-			o1.setField("score", (int) (score / rate));
+			o1.setField("cache_value", (int) (score / rate));
 			return score / rate;
 		}
 	}

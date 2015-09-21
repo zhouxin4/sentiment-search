@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import zx.soft.sent.core.domain.ErrorResponse;
-import zx.soft.sent.core.domain.QueryParams;
+import zx.soft.sent.common.domain.ErrorResponse;
+import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.insight.domain.RelationRequest;
 import zx.soft.sent.insight.domain.RelationRequest.EndPoint;
 import zx.soft.sent.insight.service.PostService;

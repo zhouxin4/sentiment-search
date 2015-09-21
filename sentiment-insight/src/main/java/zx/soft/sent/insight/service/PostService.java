@@ -12,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.common.insight.TrueUserHelper;
 import zx.soft.sent.common.insight.Virtuals.Virtual;
-import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.insight.domain.PostsResult;
 import zx.soft.sent.insight.utils.QueryCallable;
 import zx.soft.sent.solr.domain.QueryResult;

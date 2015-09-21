@@ -1,6 +1,7 @@
 package zx.soft.sent.insight.domain;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import zx.soft.utils.json.JsonUtils;
@@ -69,6 +70,7 @@ public class RelationRequest {
 		str = "{\"service\":\"POST\",\"trueUserId\":\"01012f62a89d5f8a6be12fb8595a2832\",\"virtuals\":[\"全球眼光\",\"forwardslash\",\"花小仙女\",\"村口胡大爷哇\",\"-東墻\",\"了了Miracle\",\"钟国仁是初声0000\"],\"platform\":3,\"source_id\":7,\"rows\":10,\"start\":0}";
 		RelationRequest request2 = JsonUtils.getObject(str, RelationRequest.class);
 		System.out.println(JsonUtils.toJsonWithoutPretty(request2));
+		System.out.println(JsonUtils.toJsonWithoutPretty(new HashMap<>()));
 	}
 
 	public EndPoint getService() {

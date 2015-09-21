@@ -12,11 +12,11 @@ import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.common.insight.AreaCode;
 import zx.soft.sent.common.insight.TrueUserHelper;
 import zx.soft.sent.common.insight.UserDomain;
 import zx.soft.sent.common.insight.Virtuals.Virtual;
-import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.dao.insight.RiakInsight;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.query.QueryCore;

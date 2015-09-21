@@ -70,6 +70,10 @@
 			<id>typesafe</id>
 			<name>Typesafe Repository</name>
 			<url>http://repo.typesafe.com/typesafe/releases/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
 		</repository>
 	</repositories>
 

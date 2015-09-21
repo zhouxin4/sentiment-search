@@ -7,7 +7,7 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.core.domain.ErrorResponse;
+import zx.soft.sent.common.domain.ErrorResponse;
 import zx.soft.sent.web.application.SpecialSpeedApplication;
 import zx.soft.sent.web.application.SpecialSpeedApplication.SpecialResult;
 import zx.soft.utils.codec.URLCodecUtils;

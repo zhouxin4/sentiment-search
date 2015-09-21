@@ -68,7 +68,7 @@ public class OracleToRedis {
 		try {
 			while (rs.next()) {
 				//				System.out.println(rs.getInt("ID") + "," + rs.getString("ZDMC"));
-				cache.hset(zx.soft.sent.dao.common.SentimentConstant.SITE_MAP, rs.getInt("ID") + "",
+				cache.hset(zx.soft.sent.common.domain.SentimentConstant.SITE_MAP, rs.getInt("ID") + "",
 						rs.getString("ZDMC"));
 			}
 		} catch (SQLException e) {

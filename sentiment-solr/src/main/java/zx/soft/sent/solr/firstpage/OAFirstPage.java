@@ -5,14 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.core.domain.QueryParams;
+import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.domain.SimpleFacetInfo;
-import zx.soft.sent.solr.query.SearchingData;
+import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.time.TimeUtils;
 
@@ -26,7 +27,7 @@ public class OAFirstPage {
 
 	private static Logger logger = LoggerFactory.getLogger(OAFirstPage.class);
 
-	private final SearchingData search;
+	private final QueryCore search;
 
 	public static final String[] NEGATIVES = { //
 	"造谣窒息事故暴行毁容致死诬陷猥亵砍人诈骗案反动被害逃逸违法罪犯刺死爆炸物施暴开枪迷幻药毒手炸通缉令砍伤毒打砍杀辱骂偷窃窒息而死违法行为",
@@ -43,7 +44,7 @@ public class OAFirstPage {
 	public static String LOCATION_ANHUI = "安徽";
 
 	public OAFirstPage() {
-		this.search = new SearchingData();
+		this.search = QueryCore.getInstance();
 	}
 
 	/**
@@ -248,6 +249,7 @@ public class OAFirstPage {
 		return result;
 	}
 
+	@Deprecated
 	public List<SolrDocument> getHarmfulRecords(String platform, int day, int N) {
 		logger.info("Getting today negative records ...");
 		List<SolrDocument> result = new ArrayList<>();
@@ -263,6 +265,53 @@ public class OAFirstPage {
 		return result;
 	}
 
+	public List<SolrDocument> getHarmfulRecords_N(String platform, int day, int N) {
+		logger.info("Getting today negative records ...");
+		List<SolrDocument> result = new ArrayList<>();
+		List<SolrDocument> temp = null;
+		for (String negative : NEGATIVES) {
+			temp = getHarmfulShard_N(platform, day, N, negative);
+			if (temp != null) {
+				for (SolrDocument t : temp) {
+					t.setField("cache_type", 2);
+					t.setField("cache_id", FirstPageRun.timeStrByHour());
+					tackleTime(t);
+					t.setField("id", "2_" + t.getFieldValue("id").toString());
+					result.add(t);
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 查询时间有8小时误差，在这里修正
+	 */
+	private void tackleTime(SolrDocument result) {
+		if (result.getFieldValueMap().get("timestamp") != null) {
+			result.setField("timestamp", TimeUtils.transCurrentTime(
+					TimeUtils.transSolrReturnStrToMilli(result.getFieldValueMap().get("timestamp").toString()), 0, 0,
+					0, -8));
+		}
+		if (result.getFieldValueMap().get("lasttime") != null) {
+			result.setField("lasttime", TimeUtils.transCurrentTime(
+					TimeUtils.transSolrReturnStrToMilli(result.getFieldValueMap().get("lasttime").toString()), 0, 0, 0,
+					-8));
+		}
+		if (result.getFieldValueMap().get("first_time") != null) {
+			result.setField("first_time", TimeUtils.transCurrentTime(
+					TimeUtils.transSolrReturnStrToMilli(result.getFieldValueMap().get("first_time").toString()), 0, 0,
+					0, -8));
+		}
+		if (result.getFieldValueMap().get("update_time") != null) {
+			result.setField(
+					"update_time",
+					TimeUtils.transCurrentTime(TimeUtils.transSolrReturnStrToMilli(result.getFieldValueMap()
+							.get("update_time").toString()), 0, 0, 0, -8));
+		}
+	}
+
+	@Deprecated
 	private List<SolrDocument> getHarmfulShard(String platform, int day, int N, String q) {
 		//		long currentTime = System.currentTimeMillis() - day * 86400_000L;
 		//		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
@@ -275,6 +324,21 @@ public class OAFirstPage {
 		queryParams.setFq("timestamp:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
 				+ TimeUtils.transToSolrDateStr(currentTime) + "];platform:" + platform + ";content:" + LOCATION_ANHUI);
 		QueryResult queryResult = search.queryData(queryParams, false);
+		return queryResult.getResults();
+	}
+
+	private List<SolrDocument> getHarmfulShard_N(String platform, int day, int N, String q) {
+		//		long currentTime = System.currentTimeMillis() - day * 86400_000L;
+		//		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
+		long currentTime = System.currentTimeMillis();
+		long startTime = TimeUtils.transCurrentTime(currentTime, 0, 0, 0, -1);
+		QueryParams queryParams = new QueryParams();
+		queryParams.setQ(q);
+		queryParams.setQop("OR");
+		queryParams.setRows(N);
+		queryParams.setFq("timestamp:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
+				+ TimeUtils.transToSolrDateStr(currentTime) + "];platform:" + platform);
+		QueryResponse queryResult = search.queryDataWithoutView(queryParams, false);
 		return queryResult.getResults();
 	}
 

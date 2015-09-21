@@ -1,6 +1,7 @@
-package zx.soft.sent.solr.query;
+package zx.soft.sent.origin.utils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
@@ -29,15 +29,10 @@ import zx.soft.redis.client.cache.RedisCache;
 import zx.soft.redis.client.common.Config;
 import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.common.domain.SentimentConstant;
-import zx.soft.sent.solr.domain.QueryResult;
-import zx.soft.sent.solr.domain.SimpleFacetInfo;
-import zx.soft.sent.solr.exception.SpiderSearchException;
 import zx.soft.utils.config.ConfigUtil;
-import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.regex.RegexUtils;
 import zx.soft.utils.string.StringUtils;
-import zx.soft.utils.threads.AwesomeThreadPool;
 import zx.soft.utils.time.TimeUtils;
 
 /**
@@ -64,11 +59,16 @@ public class QueryCore {
 		cache = new RedisCache(Config.get("redis.rp.slave"), Integer.parseInt(Config.get("redis.rp.port")),
 				Config.get("redis.password"));
 		Properties props = ConfigUtil.getProps("solr_params.properties");
-		cloudServer = new CloudSolrServer(props.getProperty("zookeeper_cloud"));
-		cloudServer.setDefaultCollection(props.getProperty("collection"));
-		cloudServer.setZkConnectTimeout(Integer.parseInt(props.getProperty("zookeeper_connect_timeout")));
-		cloudServer.setZkClientTimeout(Integer.parseInt(props.getProperty("zookeeper_client_timeout")));
-		cloudServer.connect();
+		try {
+			cloudServer = new CloudSolrServer(props.getProperty("cdh5_zookeeper_cloud"));
+			cloudServer.setDefaultCollection(props.getProperty("cache_collection"));
+			cloudServer.setZkConnectTimeout(Integer.parseInt(props.getProperty("zookeeper_connect_timeout")));
+			cloudServer.setZkClientTimeout(Integer.parseInt(props.getProperty("zookeeper_client_timeout")));
+			cloudServer.connect();
+		} catch (MalformedURLException e) {
+			logger.info(LogbackUtil.expection2Str(e));
+			throw new RuntimeException();
+		}
 
 	}
 
@@ -81,9 +81,9 @@ public class QueryCore {
 	 */
 	public static void main(String[] args) {
 		QueryCore search = QueryCore.getInstance();
-		QueryParams queryParams = new QueryParams();
-		queryParams.setQ("*:*");
-		queryParams.setFq("id:42009F64DB89C1BC0BEA2A046B87BF3D");
+		//		QueryParams queryParams = new QueryParams();
+		//		queryParams.setQ("*:*");
+		//		queryParams.setFq("id:A565130951A4B3EE4C3794076F16897B");
 		//timestamp:[2014-04-22T00:00:00Z TO 2014-04-23T00:00:00Z]
 		//		queryParams.setSort("timestamp:desc"); // lasttime:desc
 		//		queryParams.setStart(0);
@@ -98,19 +98,20 @@ public class QueryCore {
 		//		queryParams.setFacetRangeEnd("2015-07-13T00:00:00Z");
 		//		queryParams.setFacetRangeGap("+1HOUR");
 		//		queryParams.setFacetField("source_id");
-		QueryResponse result = search.queryDataWithoutView(queryParams, true);
+		//		QueryResponse result = search.queryDataWithoutView(queryParams, true);
 		//		List<SolrInputDocument> docs = new ArrayList<>();
 		//		for (SolrDocument doc : result.getResults()) {
 		//			docs.add(transSolrDocumentToInputDocument(doc));
 		//		}
 		//		search.addDocToSolr(docs);
-		List<String> records = new ArrayList<>();
-		for (SolrDocument doc : result.getResults()) {
-			records.add(JsonUtils.toJsonWithoutPretty(doc));
-		}
-
-		System.out.println(JsonUtils.toJson(result));
+		//		List<String> records = new ArrayList<>();
+		//		for (SolrDocument doc : result.getResults()) {
+		//			records.add(JsonUtils.toJsonWithoutPretty(doc));
+		//		}
+		//
+		//		System.out.println(JsonUtils.toJson(result));
 		//		search.deleteQuery("timestamp:[2000-11-27T00:00:00Z TO 2014-09-30T23:59:59Z]");
+		search.deleteQuery("*:*");
 		search.close();
 	}
 
@@ -129,27 +130,6 @@ public class QueryCore {
 			input.setField(field, doc.getFieldValue(field));
 		}
 		return input;
-	}
-
-	/**
-	 * @author donglei
-	 * 仅用于对大量数据的facet应用
-	 * @param queryParams
-	 * @param isPlatformTrans
-	 * @return
-	 */
-	public List<QueryResult> facetResult(QueryParams queryParams, final boolean isPlatformTrans) {
-		long startTime = System.currentTimeMillis();
-		List<Callable<QueryResult>> calls = new ArrayList<>();
-		queryParams.setShard(true);
-		for (Shards shard : Shards.values()) {
-			final QueryParams tmp = queryParams.clone();
-			tmp.setShardName(shard.name());
-			calls.add(new ShardCallable(tmp, false));
-		}
-		List<QueryResult> queryResults = AwesomeThreadPool.runCallables(6, calls);
-		logger.info("多线程请求耗时：" + (System.currentTimeMillis() - startTime));
-		return queryResults;
 	}
 
 	public void deleteQuery(String q) {
@@ -192,7 +172,6 @@ public class QueryCore {
 		}
 		if (queryResponse == null) {
 			logger.error("no response!");
-			throw new SpiderSearchException("no response!");
 		}
 		return queryResponse;
 	}
@@ -213,7 +192,6 @@ public class QueryCore {
 		}
 		if (queryResponse == null) {
 			logger.error("no response!");
-			throw new SpiderSearchException("no response!");
 		}
 
 		//		System.out.println(queryResponse.getFacetFields());
@@ -318,7 +296,7 @@ public class QueryCore {
 			for (Count temp : facet.getValues()) {
 				if ("platform".equalsIgnoreCase(facet.getName())) {
 					if (fqPlatform.contains("platform")) {
-						if ((fqPlatform.split(":"))[1].trim().equals((temp.getName()))) {
+						if ((fqPlatform.split(":"))[1].trim().contains((temp.getName()))) {
 							if (isPlatformTrans) {
 								t.put(SentimentConstant.PLATFORM_ARRAY[Integer.parseInt(temp.getName())],
 										temp.getCount());
@@ -422,7 +400,7 @@ public class QueryCore {
 			query.setRows(queryParams.getRows());
 		}
 		if (queryParams.getFl() != "") {
-			query.setFields(queryParams.getFl());
+			query.setFields(queryParams.getFl().split(","));
 		}
 		if (queryParams.getWt() != "") {
 			query.set("wt", queryParams.getWt());
@@ -528,36 +506,6 @@ public class QueryCore {
 	public void close() {
 		cloudServer.shutdown();
 		cache.close();
-	}
-
-	class ShardCallable implements Callable<QueryResult> {
-		private QueryParams params;
-		private boolean isPlatformTrans;
-
-		public ShardCallable(QueryParams params, boolean isPlatformTrans) {
-			this.params = params;
-			this.isPlatformTrans = isPlatformTrans;
-		}
-
-		@Override
-		public QueryResult call() throws Exception {
-			final SolrQuery query = getSolrQuery(this.params);
-			QueryResponse queryResponse = null;
-			try {
-				queryResponse = cloudServer.query(query, METHOD.POST);
-			} catch (SolrServerException e) {
-				logger.error("Exception:{}", LogbackUtil.expection2Str(e));
-				throw new RuntimeException(e);
-			}
-			if (queryResponse == null) {
-				logger.error("no response!");
-				throw new SpiderSearchException("no response!");
-			}
-			QueryResult result = new QueryResult();
-			logger.info("QTime: " + queryResponse.getQTime());
-			result.setFacetFields(transFacetField(queryResponse.getFacetFields(), this.params, this.isPlatformTrans));
-			return result;
-		}
 	}
 
 }

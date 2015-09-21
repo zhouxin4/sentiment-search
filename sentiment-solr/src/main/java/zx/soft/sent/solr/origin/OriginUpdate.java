@@ -22,7 +22,9 @@ import zx.soft.utils.time.TimeUtils;
 
 /**
  * 读取Oracle数据库中的信息溯源任务信息，并查询结果存储缓存信息
- *
+ * old: 缓存在riak中。 运行目录：  /run-work/timer/origin/sentiment-solr
+ * new: 缓存在cdh5solr中 运行目录： /run-work/timer/origin_new/sentiment-solr
+ * 启动  ： bin/originupdate.sh
  * @author donglei
  *
  */

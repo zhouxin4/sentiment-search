@@ -1,10 +1,8 @@
-package zx.soft.sent.insight.utils;
+package zx.soft.sent.origin.utils;
 
 import java.util.concurrent.Callable;
 
 import zx.soft.sent.common.domain.QueryParams;
-import zx.soft.sent.solr.domain.QueryResult;
-import zx.soft.sent.solr.query.QueryCore;
 
 public class QueryCallable implements Callable<QueryResult> {
 	private String tag = null;

@@ -6,7 +6,7 @@ import zx.soft.utils.driver.ProgramDriver;
 /**
  * 驱动类
  *
- * @author wanggang
+ * @author donglei
  *
  */
 public class OriginDriver {
@@ -19,8 +19,8 @@ public class OriginDriver {
 		int exitCode = -1;
 		ProgramDriver pgd = new ProgramDriver();
 		try {
-			// 运行在hefei06机器上
-			// 目录：/home/solr/run-work/api/origin  端口：10000
+			// 运行在bigdata1  --  192.168.32.22机器上
+			// 目录：/root/run-work/api/origin  端口：8900
 			pgd.addClass("originServer", OriginServer.class, "舆情数据索引接口");
 			pgd.driver(args);
 			// Success

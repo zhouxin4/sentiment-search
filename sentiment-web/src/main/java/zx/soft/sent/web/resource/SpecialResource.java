@@ -10,7 +10,7 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.core.domain.ErrorResponse;
+import zx.soft.sent.common.domain.ErrorResponse;
 import zx.soft.sent.dao.domain.special.SpecialTopic;
 import zx.soft.sent.solr.special.PieChart;
 import zx.soft.sent.solr.special.SpecialInfo;

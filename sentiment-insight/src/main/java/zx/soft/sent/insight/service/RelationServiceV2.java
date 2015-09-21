@@ -19,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.common.insight.HbaseConstant;
-import zx.soft.sent.core.domain.QueryParams;
 import zx.soft.sent.core.impala.ImpalaConnPool;
 import zx.soft.sent.core.impala.ImpalaJdbc;
 import zx.soft.sent.insight.domain.BlogResponse;

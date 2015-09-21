@@ -1,4 +1,4 @@
-package zx.soft.sent.dao.common;
+package zx.soft.sent.common.domain;
 
 /**
  * 與情信息常量值

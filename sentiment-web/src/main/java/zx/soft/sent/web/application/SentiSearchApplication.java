@@ -4,7 +4,7 @@ import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
 
-import zx.soft.sent.core.domain.QueryParams;
+import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.sent.web.resource.SentSearchResource;
