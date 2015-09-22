@@ -15,12 +15,6 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>zx.soft</groupId>
-			<artifactId>common-utils</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-
-		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sentiment-core</artifactId>
 			<version>${project.version}</version>

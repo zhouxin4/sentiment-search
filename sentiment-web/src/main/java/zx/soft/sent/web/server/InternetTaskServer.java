@@ -6,8 +6,8 @@ import org.restlet.Component;
 import org.restlet.data.Protocol;
 
 import zx.soft.sent.web.application.InternetTaskApplication;
+import zx.soft.sent.web.utils.ReplaceConvert;
 import zx.soft.utils.config.ConfigUtil;
-import zx.soft.utils.jackson.ReplaceConvert;
 
 /**
  * 全网搜索任务联合接口服务：hefei05

@@ -59,12 +59,14 @@ public class NegativeRecordsRun {
 		RedisMQ redisMQ = new RedisMQ();
 
 		List<SolrDocument> negativeRecordsForum = oafirstPage.getHarmfulRecords_N("1,2,3,4,7,10", 0, 50);
+		logger.info("查询到 {} 条数据", negativeRecordsForum.size());
 		negativeRecordsForum = NegativeRecordsRun
 				.getNewTopNNegativeRecords(negativeClassify, negativeRecordsForum, 100);
 		List<String> jsonDocs = new ArrayList<>();
 		for (SolrDocument doc : negativeRecordsForum) {
 			jsonDocs.add(JsonUtils.toJsonWithoutPretty(doc));
 		}
+		logger.info("存入Redis {} 条数据", jsonDocs.size());
 		redisMQ.addRecord(SentimentConstant.CDH5_CACHE_RECORDS, jsonDocs.toArray(new String[jsonDocs.size()]));
 
 		// 关闭资源

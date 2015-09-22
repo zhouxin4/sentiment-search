@@ -110,8 +110,8 @@ public class QueryCore {
 		//		}
 		//
 		//		System.out.println(JsonUtils.toJson(result));
-		//		search.deleteQuery("timestamp:[2000-11-27T00:00:00Z TO 2014-09-30T23:59:59Z]");
-		search.deleteQuery("*:*");
+		search.deleteQuery("timestamp:[2015-09-23T00:44:00Z TO *]");
+		//		search.deleteQuery("*:*");
 		search.close();
 	}
 

@@ -6,8 +6,8 @@ import org.restlet.Component;
 import org.restlet.data.Protocol;
 
 import zx.soft.sent.web.application.HarmfulInfoApplication;
+import zx.soft.sent.web.utils.ReplaceConvert;
 import zx.soft.utils.config.ConfigUtil;
-import zx.soft.utils.jackson.ReplaceConvert;
 
 /**
  * OA有害信息查询：hefei07

@@ -101,7 +101,7 @@ public class RelationCache {
 			for (SolrDocument document : tmp.getResults()) {
 				byte[] md5 = CheckSumUtils.md5sum(virtual.getTrueUser());
 				byte[] uuid = CheckSumUtils.md5sum(UUID.randomUUID().toString());
-				byte[] rowKey = new byte[CheckSumUtils.MD5_LENGTH * 2];
+				byte[] rowKey = new byte[16 * 2];
 				int offset = 0;
 				offset = Bytes.putBytes(rowKey, offset, md5, 0, md5.length);
 				offset = Bytes.putBytes(rowKey, offset, uuid, 0, md5.length);

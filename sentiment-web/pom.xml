@@ -116,10 +116,14 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Restlet组件 -->
 		<dependency>
-			<groupId>zx.soft</groupId>
-			<artifactId>common-utils</artifactId>
-			<version>1.2.0</version>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.jackson</artifactId>
 		</dependency>
 	</dependencies>
 	<!-- 指定公司私有Maven仓库地址，以便下载该jar包 -->
