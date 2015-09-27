@@ -17,6 +17,8 @@
 				<include>data_db.properties</include>
 				<include>solr_params.properties</include>
 				<include>web-server.properties</include>
+				<include>riak.properties</include>
+				<include>oracle_db.properties</include>
 			</includes>
 			<outputDirectory>/conf</outputDirectory>
 			<filtered>true</filtered>

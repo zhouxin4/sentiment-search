@@ -1,9 +1,10 @@
 package zx.soft.sent.web.json;
 
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonTest {
 
@@ -12,7 +13,7 @@ public class JsonTest {
 	@Before
 	public void initOM() {
 		om = new ObjectMapper();
-		om.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+		om.configure(Feature.ALLOW_COMMENTS, true);
 	}
 
 	@Test

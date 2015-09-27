@@ -23,6 +23,9 @@ import zx.soft.utils.time.TimeUtils;
 /**
  * 读取Oracle数据库中的全网任务信息，并查询结果存储缓存信息
  *
+ * 广西 ： gxqt6
+ * 启动目录： /home/solr/run-work/timer/oa-allinternet
+ *
  * @author wanggang
  *
  */
@@ -156,6 +159,9 @@ public class TaskUpdate {
 				task.setSource_ids(task.getSource_ids() + "," + rs.getString("sourceid"));
 			}
 			id = rs.getString("id");
+		}
+		if (task == null) {
+			return result;
 		}
 		// 最后一个添加
 		if (result.get(task.getIdentify()) == null) {

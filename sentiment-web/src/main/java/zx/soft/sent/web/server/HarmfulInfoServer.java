@@ -17,6 +17,9 @@ import zx.soft.utils.config.ConfigUtil;
  * 运行目录：/home/zxdfs/run-work/api/oa-harmful
  * 运行命令：cd sentiment-web
  *        bin/ctl.sh start harmfulInfoServer
+ * 广西： gxqt4
+ * 运行目录：/home/zxdfs/run-work/api/oa-harmful
+ * 端口： 4900
  *
  * @author wanggang
  *

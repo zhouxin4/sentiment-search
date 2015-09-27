@@ -21,6 +21,10 @@ import zx.soft.utils.config.ConfigUtil;
  *  运行命令：cd sentiment-web
  *         bin/ctl.sh start specialServer
  *
+ *  广西区厅： gxqt5
+ *  运行目录：/home/zxdfs/run-work/api/oa-special
+ *  端口：5900
+ *
  * @author wanggang
  *
  */

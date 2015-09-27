@@ -18,6 +18,10 @@ import zx.soft.utils.config.ConfigUtil;
  *  运行命令：cd sentiment-web
  *         bin/ctl.sh start pullRecordServer
  *
+ *  广西：gxqt6
+ *  运行目录：/home/solr/run-work/api/mysql
+ *  端口：7900
+ *
  * @author wanggang
  *
  */

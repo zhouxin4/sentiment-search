@@ -17,6 +17,10 @@ import zx.soft.utils.config.ConfigUtil;
  * 运行命令：cd sentiment-web
  *        bin/ctl.sh start siteServer
  *
+ * 广西： gxqt5
+ * 运行目录：/home/zxdfs/run-work/api/site
+ * 端口： 6900
+ *
  * @author wanggang
  */
 public class SiteServer {

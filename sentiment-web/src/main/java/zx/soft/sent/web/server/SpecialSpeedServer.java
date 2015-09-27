@@ -18,6 +18,9 @@ import zx.soft.utils.config.ConfigUtil;
  * 运行命令：cd sentiment-web
  *        bin/ctl.sh start specialSpeedServer
  *
+ * 广西区厅： gxqt4
+ * 运行目录：/home/zxdfs/run-work/api/special
+ * 端口：5900
  * @author wanggang
  *
  */

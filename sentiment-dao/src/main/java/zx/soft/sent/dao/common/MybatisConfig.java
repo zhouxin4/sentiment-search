@@ -15,7 +15,7 @@ import zx.soft.utils.log.LogbackUtil;
 
 /**
  * Mybatis配置类
- * 
+ *
  * @author wanggang
  *
  */

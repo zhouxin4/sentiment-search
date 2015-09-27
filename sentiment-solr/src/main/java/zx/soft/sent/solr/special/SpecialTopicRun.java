@@ -29,6 +29,9 @@ import zx.soft.utils.time.TimeUtils;
  * 运行目录：/home/zxdfs/run-work/timer/oa-special
  * 运行命令：./special_timer.sh &
  *
+ * 广西： gxqt6
+ * 运行目录： /home/solr/run-work/timer/oa-special
+ *运行命令：bin/special_timer.sh &
  * @author wanggang
  *
  */
@@ -131,6 +134,7 @@ public class SpecialTopicRun {
 			search.close();
 		} catch (Exception e) {
 			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
+			e.printStackTrace();
 		}
 	}
 

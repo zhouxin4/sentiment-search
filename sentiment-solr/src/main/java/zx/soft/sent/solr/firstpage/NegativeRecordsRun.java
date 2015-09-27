@@ -181,9 +181,9 @@ public class NegativeRecordsRun {
 				return 0;
 			}
 			float score = negativeClassify.getTextScore(str);
-			//		int rate = str.length() / 20 + 1;
-			int rate = (int) Math.log10(str.length()) + 1;
-			o1.setField("cache_value", (int) (score / rate));
+			float rate = (float) Math.log10(str.length());
+			o1.setField("cache_value", (int) Math.ceil((score / rate)));
+
 			return score / rate;
 		}
 	}

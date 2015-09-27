@@ -14,6 +14,21 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>zx.soft</groupId>
+			<artifactId>common-utils</artifactId>
+			<version>1.2.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>fr.inria.powerapi.sensor</groupId>
+					<artifactId>sensor-cpu-sigar</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.restlet.jse</groupId>
+					<artifactId>org.restlet.ext.jackson</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sentiment-dao</artifactId>
 			<version>${project.version}</version>
@@ -147,6 +162,8 @@
 						<exclude>data_db.properties</exclude>
 						<exclude>solr_params.properties</exclude>
 						<exclude>web-server.properties</exclude>
+						<exclude>riak.properties</exclude>
+						<exclude>oracle_db.properties</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

@@ -42,6 +42,7 @@ public class OAFirstPage {
 			"因涉嫌故意伤害案发后" };
 
 	public static String LOCATION_ANHUI = "安徽";
+	public static String LOCATION_GUANGXI = "广西";
 
 	public OAFirstPage() {
 		this.search = QueryCore.getInstance();
@@ -231,8 +232,10 @@ public class OAFirstPage {
 		queryParams.setQ(q);
 		queryParams.setQop("OR");
 		queryParams.setRows(N);
-		queryParams.setFq("timestamp:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
-				+ TimeUtils.transToSolrDateStr(currentTime) + "];platform:" + platform + ";content:" + LOCATION_ANHUI);
+		queryParams
+				.setFq("timestamp:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
+						+ TimeUtils.transToSolrDateStr(currentTime) + "];platform:" + platform + ";content:"
+						+ LOCATION_GUANGXI);
 		QueryResult queryResult = search.queryData(queryParams, false);
 		return queryResult.getResults();
 	}
@@ -249,7 +252,6 @@ public class OAFirstPage {
 		return result;
 	}
 
-	@Deprecated
 	public List<SolrDocument> getHarmfulRecords(String platform, int day, int N) {
 		logger.info("Getting today negative records ...");
 		List<SolrDocument> result = new ArrayList<>();
@@ -311,7 +313,6 @@ public class OAFirstPage {
 		}
 	}
 
-	@Deprecated
 	private List<SolrDocument> getHarmfulShard(String platform, int day, int N, String q) {
 		//		long currentTime = System.currentTimeMillis() - day * 86400_000L;
 		//		long startTime = currentTime - currentTime % 86400_000L - 8 * 3600_000L;
@@ -321,8 +322,10 @@ public class OAFirstPage {
 		queryParams.setQ(q);
 		queryParams.setQop("OR");
 		queryParams.setRows(N);
-		queryParams.setFq("timestamp:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
-				+ TimeUtils.transToSolrDateStr(currentTime) + "];platform:" + platform + ";content:" + LOCATION_ANHUI);
+		queryParams
+				.setFq("timestamp:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
+						+ TimeUtils.transToSolrDateStr(currentTime) + "];platform:" + platform + ";content:"
+						+ LOCATION_GUANGXI);
 		QueryResult queryResult = search.queryData(queryParams, false);
 		return queryResult.getResults();
 	}

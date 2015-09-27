@@ -18,6 +18,10 @@ import zx.soft.utils.config.ConfigUtil;
  * 运行命令： cd sentiment-web
  *         bin/ctl.sh start nicknameGroupServer
  *
+ * 广西： gxqt5
+ * 运行目录： /home/solr/run-work/api/nicknamegroup
+ * 端口： 8901
+ *
  * @author wanggang
  *
  */

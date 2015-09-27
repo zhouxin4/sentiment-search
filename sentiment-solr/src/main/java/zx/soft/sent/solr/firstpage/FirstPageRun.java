@@ -31,6 +31,9 @@ import zx.soft.utils.sort.InsertSort;
  *     最终状态： 无oa-firstpageharmful，合并后部署在oa-firstpage
  * 运行命令：./firstpage_timer.sh &
  *
+ * 广西： gxqt6
+ * 运行目录：/home/solr/run-work/timer/oa-firstpage
+ *
  * @author donglei
  *
  */
@@ -221,9 +224,8 @@ public class FirstPageRun {
 				return 0;
 			}
 			float score = negativeClassify.getTextScore(str);
-			//		int rate = str.length() / 20 + 1;
-			int rate = (int) Math.log10(str.length()) + 1;
-			o1.setField("score", (int) (score / rate));
+			float rate = (float) Math.log10(str.length());
+			o1.setField("score", (int) Math.ceil((score / rate)));
 			return score / rate;
 		}
 	}

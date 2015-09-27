@@ -21,6 +21,9 @@ import org.springframework.web.servlet.DispatcherServlet;
  * 运行命令：cd sentiment-api
  *        bin/ctl.sh start queryApiServer
  *
+ *  广西：gxqt5
+ *  运行目录：/home/solr/run-work/api/oa-allinternet
+ *  端口：2900
  * @author wanggang
  *
  */

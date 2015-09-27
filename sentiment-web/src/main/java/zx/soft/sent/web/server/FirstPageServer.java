@@ -17,6 +17,10 @@ import zx.soft.utils.config.ConfigUtil;
  * 运行命令：cd sentiment-web
  *        bin/ctl.sh start firstPageServer
  *
+ * 广西： gxqt4
+ * 运行目录：/home/zxdfs/run-work/api/oa-firstpage
+ * 端口：5901
+ *
  * @author wanggang
  *
  */
