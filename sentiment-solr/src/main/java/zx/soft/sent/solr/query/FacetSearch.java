@@ -24,7 +24,7 @@ public class FacetSearch {
 
 	private static Logger logger = LoggerFactory.getLogger(FacetSearch.class);
 
-	private static final String BASE_URL = "http://192.168.32.11:8983/solr/sentiment/select?wt=json&indent=true&facet=true&rows=0";
+	private static final String BASE_URL = "http://192.168.43.100:8983/solr/sentiment/select?wt=json&indent=true&facet=true&rows=0";
 
 	private static final String Q = "q";
 	private static final String Q_OP = "q.op"; // 系统默认是OR关系，但是舆情项目是AND关系
