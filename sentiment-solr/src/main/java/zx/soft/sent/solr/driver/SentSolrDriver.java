@@ -54,7 +54,7 @@ public class SentSolrDriver {
 			// 在hefei06机器上运行
 			pgd.addClass("originUpdate", OriginUpdate.class, "定时更新溯源任务的缓存");
 
-			pgd.addClass("relationCacheV2", RelationCacheV2.class, "定时更新博文关系");
+			pgd.addClass("relationCacheV2", RelationCacheV2.class, "定时更新新浪博文关系");
 			// 在hefei06机器上运行
 			pgd.addClass("negativeRecordsRun", NegativeRecordsRun.class, "定时缓存负面信息关系");
 

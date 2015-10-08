@@ -28,8 +28,8 @@ public class RelationCacheV2 {
 
 	private static Logger logger = LoggerFactory.getLogger(RelationCacheV2.class);
 
-	private static String LASTEST_BLOGS = "http://192.168.32.22:8888/weibos/lastest?screen_name=%s";
-	private static String COMMENTS = "http://192.168.32.22:8888/weibos/comments/%s";
+	private static String LASTEST_BLOGS = "http://192.168.32.22:8900/weibos/lastest?screen_name=%s";
+	private static String COMMENTS = "http://192.168.32.22:8900/weibos/comments/%s";
 	private static final String WEIBO_BASE_URL = "http://weibo.com/";
 
 	static {

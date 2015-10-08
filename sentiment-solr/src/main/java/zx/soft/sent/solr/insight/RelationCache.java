@@ -1,12 +1,10 @@
 package zx.soft.sent.solr.insight;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +16,11 @@ import zx.soft.sent.common.insight.TrueUserHelper;
 import zx.soft.sent.common.insight.UserDomain;
 import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.sent.core.hbase.HBaseUtils;
+import zx.soft.sent.core.hbase.HbaseDao;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.checksum.CheckSumUtils;
+import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.time.TimeUtils;
 
 public class RelationCache {
@@ -53,9 +53,10 @@ public class RelationCache {
 			throw new RuntimeException();
 		}
 		long endTime = System.currentTimeMillis();
-		long startTime = getStartTime(endTime, -30);
-		String timeFilter = "lasttime:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
-				+ TimeUtils.transToSolrDateStr(endTime) + "]";
+		long startTime = TimeUtils.transCurrentTime(endTime, 0, 0, 0, -1);
+		//		String timeFilter = "lasttime:[" + TimeUtils.transToSolrDateStr(startTime) + " TO "
+		//				+ TimeUtils.transToSolrDateStr(endTime) + "]";
+		String timeFilter = "";
 		for (AreaCode area : AreaCode.values()) {
 			String areaCode = area.getAreaCode();
 			List<UserDomain> trueUsers = TrueUserHelper.getTrueUsers(areaCode);
@@ -63,7 +64,11 @@ public class RelationCache {
 				String trueUserId = user.getTureUserId();
 				List<Virtual> virtuals = TrueUserHelper.getVirtuals(trueUserId);
 				for (Virtual virtual : virtuals) {
-					cacheHalfHourRelation(virtual, timeFilter);
+					try {
+						cacheHalfHourRelation(virtual, timeFilter);
+					} catch (Exception e) {
+						logger.info(LogbackUtil.expection2Str(e));
+					}
 				}
 			}
 		}
@@ -72,7 +77,7 @@ public class RelationCache {
 		logger.info("Finishing query OA-FirstPage data...");
 	}
 
-	private void cacheHalfHourRelation(Virtual virtual, String timeFilter) {
+	private void cacheHalfHourRelation(Virtual virtual, String timeFilter) throws Exception {
 		QueryParams params = new QueryParams();
 		params.setQ("*:*");
 		params.setFq(timeFilter);
@@ -96,34 +101,41 @@ public class RelationCache {
 		params.setQ("*:*");
 		params.setRows(200);
 		for (SolrDocument doc : result.getResults()) {
-			params.setFq("original_uid:" + doc.getFieldValue("id").toString());
+			params.setFq("original_id:" + doc.getFieldValue("id").toString());
 			QueryResult tmp = QueryCore.getInstance().queryData(params, false);
 			for (SolrDocument document : tmp.getResults()) {
-				byte[] md5 = CheckSumUtils.md5sum(virtual.getTrueUser());
-				byte[] uuid = CheckSumUtils.md5sum(UUID.randomUUID().toString());
-				byte[] rowKey = new byte[16 * 2];
-				int offset = 0;
-				offset = Bytes.putBytes(rowKey, offset, md5, 0, md5.length);
-				offset = Bytes.putBytes(rowKey, offset, uuid, 0, md5.length);
-
-				Put put = new Put(rowKey);
-				put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.TRUE_USER),
-						Bytes.toBytes(virtual.getTrueUser()));
-				put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.TIMESTAMP),
-						Bytes.toBytes(TimeUtils.transTimeLong((String) doc.getFieldValue("timestamp"))));
-				put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.VIRTUAL),
-						Bytes.toBytes(virtual.getNickname()));
-				put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.PLATFORM),
-						Bytes.toBytes(virtual.getPlatform()));
-				put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.SOURCE_ID),
-						Bytes.toBytes(virtual.getSource_id()));
-				put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.ID),
-						Bytes.toBytes(doc.getFieldValue("id").toString()));
-				put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMMENT_USER),
-						Bytes.toBytes(document.getFieldValue("nickname").toString()));
-				put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME), Bytes.toBytes(HbaseConstant.COMMENT_TIME),
-						Bytes.toBytes(document.getFieldValue("timestamp").toString()));
-				HBaseUtils.put(HbaseConstant.TABLE_NAME, put);
+				HbaseDao dao = new HbaseDao(HbaseConstant.TABLE_NAME, 10);
+				byte[] rowKey = CheckSumUtils.md5sum(virtual.getTrueUser() + document.getFieldValue("id").toString());
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TRUE_USER, virtual.getTrueUser());
+				try {
+					dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TIMESTAMP,
+							TimeUtils.tranSolrDateStrToMilli(doc.getFieldValue("timestamp").toString()) + "");
+				} catch (ParseException e) {
+					logger.error(LogbackUtil.expection2Str(e));
+				}
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.VIRTUAL,
+						doc.getFieldValue("nickname").toString());
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.PLATFORM,
+						doc.getFieldValue("platform").toString());
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.SOURCE_ID,
+						doc.getFieldValue("source_id").toString());
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.ID, doc.getFieldValue("id")
+						.toString());
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TEXT, doc.getFieldValue("title")
+						.toString() + "            " + doc.getFieldValue("content").toString());
+				//		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMPLETE_RECORD,
+				//				JsonUtils.toJsonWithoutPretty(weibo));
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_USER, document
+						.getFieldValue("nickname").toString());
+				try {
+					dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_TIME,
+							TimeUtils.tranSolrDateStrToMilli(document.getFieldValue("timestamp").toString()) + "");
+				} catch (ParseException e) {
+					logger.error(LogbackUtil.expection2Str(e));
+				}
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_CONTEXT, document
+						.getFieldValue("content").toString());
+				dao.flushPuts();
 			}
 		}
 
@@ -132,7 +144,7 @@ public class RelationCache {
 	private long getStartTime(long currentTime, int gapMin) {
 		Calendar date = Calendar.getInstance();
 		date.setTimeInMillis(currentTime);
-		date.set(Calendar.HOUR_OF_DAY, date.get(Calendar.MINUTE) + gapMin);
+		date.set(Calendar.MINUTE, date.get(Calendar.MINUTE) + gapMin);
 		return date.getTimeInMillis();
 	}
 

@@ -180,6 +180,10 @@
 			<name>Nexus Release Repository</name>
 			<url>http://192.168.3.23:18081/nexus/content/groups/public/</url>
 		</repository>
+		<repository>
+			<id>cloudera</id>
+			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+		</repository>
 	</repositories>
 
 </project>

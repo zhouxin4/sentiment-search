@@ -24,6 +24,7 @@
 		<module>sentiment-insight</module>
 		<module>sentiment-origin</module>
 		<module>sentiment-common</module>
+		<module>sentiment-incompatible</module>
 	</modules>
 
 	<dependencies>
@@ -39,6 +40,14 @@
 				<exclusion>
 					<groupId>org.restlet.jse</groupId>
 					<artifactId>org.restlet.ext.jackson</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.github.jnr</groupId>
+					<artifactId>jnr-posix</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>net.java.dev.jna</groupId>
+					<artifactId>jna-platform</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
