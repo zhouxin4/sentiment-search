@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import zx.soft.kafka.producer.ProducerInstance;
 import zx.soft.sent.common.index.PostData;
 import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.dao.persist.PersistCore;
@@ -28,6 +29,8 @@ import zx.soft.utils.threads.ApplyThreadPool;
 public class IndexService {
 
 	private static Logger logger = LoggerFactory.getLogger(IndexService.class);
+
+	public static final String TOPIC = "sentiment-cache";
 
 	@Inject
 	private PersistCore persistCore;
@@ -59,9 +62,10 @@ public class IndexService {
 					@Override
 					public void run() {
 						// 持久化到Redis
-						addToRedis(postData.getRecords());
+						//						addToRedis(postData.getRecords());
 						// 这里面以及包含了错误日志记录
 						//						persist(postData.getRecords());
+						push2Kafka(postData.getRecords());
 					}
 				}));
 			}
@@ -99,6 +103,13 @@ public class IndexService {
 				record.setPic_url(record.getPic_url().substring(0, 500));
 			}
 			persistCore.persist(record);
+		}
+	}
+
+	private void push2Kafka(List<RecordInfo> records) {
+		ProducerInstance instance = ProducerInstance.getInstance();
+		for (RecordInfo record : records) {
+			instance.pushRecord(TOPIC, JsonUtils.toJsonWithoutPretty(record));
 		}
 	}
 
