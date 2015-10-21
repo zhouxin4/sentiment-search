@@ -43,8 +43,8 @@
 					<artifactId>org.restlet</artifactId>
 				</exclusion>
 				<exclusion>
-				<groupId>org.ansj</groupId>
-				<artifactId>ansj_seg</artifactId>
+					<groupId>org.ansj</groupId>
+					<artifactId>ansj_seg</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -109,7 +109,7 @@
 					<groupId>com.basho.riak</groupId>
 					<artifactId>riak-client</artifactId>
 				</exclusion>
-								<exclusion>
+				<exclusion>
 					<groupId>org.apache.solr</groupId>
 					<artifactId>solr-solrj</artifactId>
 				</exclusion>
@@ -124,6 +124,11 @@
 			<groupId>zx.soft</groupId>
 			<artifactId>redis-client</artifactId>
 			<version>1.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>zx.soft</groupId>
+			<artifactId>kafka-client</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.solr</groupId>
