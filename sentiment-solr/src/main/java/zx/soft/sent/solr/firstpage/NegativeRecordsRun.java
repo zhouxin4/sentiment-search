@@ -22,10 +22,10 @@ import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.sort.InsertSort;
 
 /**
- * OA首页信息定时分析：hefei07
+ * 负面信息定时分析：hefei06
  *
- * 运行目录：/home/zxdfs/run-work/timer/oa-firstpage
- * 运行命令：./firstpage_timer.sh &
+ * 运行目录：/home/zxdfs/run-work/timer/oa-
+ * 运行命令：bin/negativeRecordsRun.sh &
  *
  * @author donglei
  *

@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
@@ -38,7 +40,7 @@ import zx.soft.utils.time.TimeUtils;
 /**
  * 搜索舆情数据
  *
- * @author wanggang
+ * @author donglei
  *
  */
 public class QueryCore {
@@ -283,10 +285,14 @@ public class QueryCore {
 		if (facets == null) {
 			return null;
 		}
-		String fqPlatform = "";
+		Set<String> plats = new HashSet<>();
+		boolean containPlatform = false;
 		for (String str : queryParams.getFq().split(";")) {
 			if (str.contains("platform")) {
-				fqPlatform = str;
+				for (String plat : (str.split(":"))[1].split(",")) {
+					plats.add(plat.trim());
+				}
+				containPlatform = true;
 			}
 		}
 		for (FacetField facet : facets) {
@@ -295,8 +301,8 @@ public class QueryCore {
 			HashMap<String, Long> t = new LinkedHashMap<>();
 			for (Count temp : facet.getValues()) {
 				if ("platform".equalsIgnoreCase(facet.getName())) {
-					if (fqPlatform.contains("platform")) {
-						if ((fqPlatform.split(":"))[1].trim().contains((temp.getName()))) {
+					if (containPlatform) {
+						if (plats.contains(temp.getName())) {
 							if (isPlatformTrans) {
 								t.put(SentimentConstant.PLATFORM_ARRAY[Integer.parseInt(temp.getName())],
 										temp.getCount());

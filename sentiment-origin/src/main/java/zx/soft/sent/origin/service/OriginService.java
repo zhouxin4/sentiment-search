@@ -1,6 +1,7 @@
 package zx.soft.sent.origin.service;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,7 @@ public class OriginService {
 			return maps;
 		}
 		long maxTime = TimeUtils.transTimeLong(descResult.getResults().get(0).getFieldValue("timestamp").toString());
+		maxTime = maxTime > System.currentTimeMillis() ? System.currentTimeMillis() : maxTime;
 		tmp.setSort("timestamp:asc");
 		QueryResult ascResult = core.queryData(tmp, false);
 		if (ascResult.getNumFound() == 0) {
@@ -117,6 +119,12 @@ public class OriginService {
 			gap = "+1MONTH";
 			type = 2;
 		}
+		if (type == 1) {
+			minTime = TimeUtils.getMidnight(minTime, 0);
+		} else {
+			minTime = getMonth(minTime);
+		}
+
 		QueryParams queryParams = new QueryParams();
 		queryParams.setQ("*:*");
 		queryParams.setFacetRange("timestamp");
@@ -143,4 +151,13 @@ public class OriginService {
 		return maps;
 
 	}
+
+	private static long getMonth(long milli) {
+		Calendar date = Calendar.getInstance();
+		date.setTimeInMillis(milli);
+		date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), 1, 0, 0, 0);
+		date.set(Calendar.MILLISECOND, 0);
+		return date.getTimeInMillis();
+	}
+
 }

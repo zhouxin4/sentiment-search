@@ -2,8 +2,11 @@ package zx.soft.sent.solr.allinternet;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -20,10 +23,12 @@ import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.threads.ApplyThreadPool;
 import zx.soft.utils.time.TimeUtils;
 
+import com.google.common.base.Joiner;
+
 /**
  * 读取Oracle数据库中的全网任务信息，并查询结果存储缓存信息
  *
- * 广西 ： gxqt6
+ * 广西 ： gxqt4
  * 启动目录： /home/solr/run-work/timer/oa-allinternet
  *
  * @author wanggang
@@ -143,7 +148,7 @@ public class TaskUpdate {
 						result.put(task.getIdentify(), task);
 					} else {
 						InternetTask tmp = result.get(task.getIdentify());
-						tmp.setSource_ids(tmp.getSource_ids() + "," + task.getSource_ids());
+						tmp.setSource_ids(mergeSourceId(tmp.getSource_ids(), task.getSource_ids()));
 						result.put(task.getIdentify(), tmp);
 					}
 				}
@@ -156,7 +161,7 @@ public class TaskUpdate {
 								: TimeUtils.transToSolrDateStr(rs.getTimestamp("jssj").getTime()), //
 						rs.getString("sourceid"));
 			} else {
-				task.setSource_ids(task.getSource_ids() + "," + rs.getString("sourceid"));
+				task.setSource_ids(mergeSourceId(task.getSource_ids(), rs.getString("sourceid")));
 			}
 			id = rs.getString("id");
 		}
@@ -168,7 +173,7 @@ public class TaskUpdate {
 			result.put(task.getIdentify(), task);
 		} else {
 			InternetTask tmp = result.get(task.getIdentify());
-			tmp.setSource_ids(tmp.getSource_ids() + "," + task.getSource_ids());
+			tmp.setSource_ids(mergeSourceId(tmp.getSource_ids(), task.getSource_ids()));
 			result.put(task.getIdentify(), tmp);
 		}
 
@@ -185,6 +190,13 @@ public class TaskUpdate {
 			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static String mergeSourceId(String ids1, String ids2) {
+		Set<String> ids = new HashSet<>();
+		ids.addAll(Arrays.asList(ids1.split(",")));
+		ids.addAll(Arrays.asList(ids2.split(",")));
+		return Joiner.on(",").join(ids.iterator());
 	}
 
 }

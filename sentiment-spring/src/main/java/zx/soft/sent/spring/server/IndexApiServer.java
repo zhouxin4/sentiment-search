@@ -14,8 +14,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import zx.soft.sent.spring.utils.TokenPersist;
-
 /**
  * 用户数据接口服务：hefei01~hefei06
  * 接口说明：http://192.168.32.1X:8900/sentiment/index   POST: PostData
@@ -44,7 +42,6 @@ public class IndexApiServer {
 	public static void main(String[] args) throws Exception {
 		Properties props = new Properties();
 		props.load(IndexApiServer.class.getClassLoader().getResourceAsStream("web-server.properties"));
-		new Thread(TokenPersist.getInstance()).start();
 		new IndexApiServer().startJetty(Integer.valueOf(props.getProperty("api.port", String.valueOf(DEFAULT_PORT))));
 	}
 

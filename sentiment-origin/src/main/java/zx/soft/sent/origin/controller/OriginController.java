@@ -34,7 +34,7 @@ import com.google.common.collect.Collections2;
 /**
  * 索引控制类
  *
- * @author wanggang
+ * @author donglei
  *
  */
 @Controller

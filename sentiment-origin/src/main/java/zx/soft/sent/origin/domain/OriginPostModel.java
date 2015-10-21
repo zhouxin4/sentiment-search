@@ -7,6 +7,11 @@ import org.apache.solr.common.SolrDocument;
 
 import com.google.common.base.MoreObjects;
 
+/**
+ *
+ * @author donglei
+ *
+ */
 public class OriginPostModel {
 	// 总数
 	private int count;

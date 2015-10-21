@@ -13,6 +13,7 @@ import zx.soft.sent.solr.query.RemoveRedisReplicationData;
 import zx.soft.sent.solr.query.RemoveSentiData;
 import zx.soft.sent.solr.query.RemoveWeiboData;
 import zx.soft.sent.solr.special.SpecialTopicRun;
+import zx.soft.sent.solr.tmp.ImportSolrToGuangxi;
 import zx.soft.utils.driver.ProgramDriver;
 
 /**
@@ -57,6 +58,8 @@ public class SentSolrDriver {
 			pgd.addClass("relationCacheV2", RelationCacheV2.class, "定时更新新浪博文关系");
 			// 在hefei06机器上运行
 			pgd.addClass("negativeRecordsRun", NegativeRecordsRun.class, "定时缓存负面信息关系");
+
+			pgd.addClass("importSolrToGuangxi", ImportSolrToGuangxi.class, "临时任务，将省厅数据写入广西区厅");
 
 			pgd.driver(args);
 			// Success

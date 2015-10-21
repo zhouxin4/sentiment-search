@@ -31,7 +31,7 @@ import zx.soft.utils.sort.InsertSort;
  *     最终状态： 无oa-firstpageharmful，合并后部署在oa-firstpage
  * 运行命令：./firstpage_timer.sh &
  *
- * 广西： gxqt6
+ * 广西： gxqt4
  * 运行目录：/home/solr/run-work/timer/oa-firstpage
  *
  * @author donglei

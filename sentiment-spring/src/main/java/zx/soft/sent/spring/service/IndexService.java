@@ -14,9 +14,6 @@ import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.dao.persist.PersistCore;
 import zx.soft.sent.solr.utils.RedisMQ;
 import zx.soft.sent.spring.domain.ErrorResponse;
-import zx.soft.sent.spring.domain.ErrorResponse.Builder;
-import zx.soft.sent.spring.domain.TokenUpdateData;
-import zx.soft.sent.spring.utils.StringCache;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.threads.ApplyThreadPool;
@@ -49,39 +46,6 @@ public class IndexService {
 		}));
 	}
 
-	public ErrorResponse insertNewTokens(TokenUpdateData tokenData) {
-		logger.info(JsonUtils.toJsonWithoutPretty(tokenData));
-		int errorCode = 0;
-		String errorMessage = "OK";
-		for (String token : tokenData.getTokens()) {
-			if (!token.isEmpty()) {
-				if (!StringCache.addToken(token)) {
-					errorCode = 1;
-					errorMessage = "No space is currently available!";
-					logger.info(errorMessage);
-				}
-			}
-		}
-		//		if (errorCode == 0 && tokenData.isIntime()) {
-		//			new Thread(new Runnable() {
-		//
-		//				@Override
-		//				public void run() {
-		//					try {
-		//						Thread.sleep(3000);
-		//					} catch (InterruptedException e) {
-		//						// TODO Auto-generated catch block
-		//						e.printStackTrace();
-		//					}
-		//					String response = HttpUtils
-		//					.doGet("http://192.168.31.11:8983/solr/admin/collections?action=RELOAD&name=sentiment");
-		//					logger.info(response);
-		//				}
-		//			}).start();
-		//		}
-		return new ErrorResponse(new Builder(errorCode, errorMessage));
-	}
-
 	public ErrorResponse addIndexData(final PostData postData) {
 		if (postData == null) {
 			logger.info("Records' size=0");
@@ -97,7 +61,7 @@ public class IndexService {
 						// 持久化到Redis
 						addToRedis(postData.getRecords());
 						// 这里面以及包含了错误日志记录
-						persist(postData.getRecords());
+						//						persist(postData.getRecords());
 					}
 				}));
 			}

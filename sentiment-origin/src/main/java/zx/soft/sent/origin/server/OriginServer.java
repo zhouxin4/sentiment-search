@@ -19,7 +19,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * 运行命令：
  *        bin/ctl.sh start originServer &
  *
- * @author wanggang
+ * @author donglei
  *
  */
 public class OriginServer {

@@ -1,6 +1,7 @@
 package zx.soft.sent.solr.tmp;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import zx.soft.sent.common.index.PostData;
 import zx.soft.sent.common.index.RecordInfo;
 import zx.soft.sent.dao.common.MybatisConfig.ServerEnum;
 import zx.soft.sent.dao.domain.sentiment.RecordSelect;
@@ -20,7 +22,7 @@ import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.time.TimeUtils;
 
 public class ImportSolrToGuangxi {
-	private static final String BASE_URL = "http://121.31.12.34:28985/solr2lucene/data";
+	private static final String BASE_URL = "http://121.31.12.34:28093/sentiment/index";
 
 	public static void main(String[] args) {
 		SentimentRecord sentRecord = new SentimentRecord(ServerEnum.sentiment);
@@ -48,15 +50,33 @@ public class ImportSolrToGuangxi {
 		public void run() {
 			long current = System.currentTimeMillis();
 			long low = TimeUtils.transCurrentTime(current, 0, 0, 0, -1);
+			List<RecordInfo> postRecords = new ArrayList<>();
 			List<RecordSelect> records = sentRecord
 					.selectRecordsByLasttime(tableName, new Date(low), new Date(current));
 			for (RecordSelect record : records) {
 				int platform = record.getPlatform();
-				if (platform == 1 || platform == 3 || platform == 4 || platform == 5) {
+				if (platform == 9 || platform == 10) {
 					RecordInfo info = parseRecord(record);
-					String response = new HttpClientDaoImpl().doPost(BASE_URL, JsonUtils.toJsonWithoutPretty(info));
-					logger.info(record.getId() + "-----" + response);
+					postRecords.add(info);
+					if (postRecords.size() >= 2) {
+						PostData postData = new PostData();
+						postData.setNum(postRecords.size());
+						postData.setRecords(postRecords);
+						String response = new HttpClientDaoImpl().doPostAndGetResponse(BASE_URL,
+								JsonUtils.toJsonWithoutPretty(postData));
+						logger.info(response);
+						postRecords.clear();
+					}
 				}
+			}
+			if (!postRecords.isEmpty()) {
+				PostData postData = new PostData();
+				postData.setNum(postRecords.size());
+				postData.setRecords(postRecords);
+				String response = new HttpClientDaoImpl().doPostAndGetResponse(BASE_URL,
+						JsonUtils.toJsonWithoutPretty(postData));
+				logger.info(response);
+				postRecords.clear();
 			}
 
 		}

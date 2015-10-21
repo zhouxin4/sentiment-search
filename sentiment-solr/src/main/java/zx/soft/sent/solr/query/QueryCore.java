@@ -3,11 +3,13 @@ package zx.soft.sent.solr.query;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -104,13 +106,22 @@ public class QueryCore {
 		//			docs.add(transSolrDocumentToInputDocument(doc));
 		//		}
 		//		search.addDocToSolr(docs);
+		SolrQuery params = new SolrQuery();
+		params.setQuery("*:*");
+		params.addFilterQuery("id:A230370D7ED0C45784D31AD673D8C1A2");
+		QueryResponse response = null;
+		try {
+			response = search.cloudServer.query(params);
+		} catch (SolrServerException e) {
+			e.printStackTrace();
+		}
+
 		List<String> records = new ArrayList<>();
-		for (SolrDocument doc : result.getResults()) {
+		for (SolrDocument doc : response.getResults()) {
 			records.add(JsonUtils.toJsonWithoutPretty(doc));
 		}
 
-		System.out.println(JsonUtils.toJson(result));
-		//		search.deleteQuery("timestamp:[2000-11-27T00:00:00Z TO 2014-09-30T23:59:59Z]");
+		System.out.println(JsonUtils.toJson(records));
 		search.close();
 	}
 
@@ -305,10 +316,14 @@ public class QueryCore {
 		if (facets == null) {
 			return null;
 		}
-		String fqPlatform = "";
+		Set<String> plats = new HashSet<>();
+		boolean containPlatform = false;
 		for (String str : queryParams.getFq().split(";")) {
 			if (str.contains("platform")) {
-				fqPlatform = str;
+				for (String plat : (str.split(":"))[1].split(",")) {
+					plats.add(plat.trim());
+				}
+				containPlatform = true;
 			}
 		}
 		for (FacetField facet : facets) {
@@ -317,8 +332,8 @@ public class QueryCore {
 			HashMap<String, Long> t = new LinkedHashMap<>();
 			for (Count temp : facet.getValues()) {
 				if ("platform".equalsIgnoreCase(facet.getName())) {
-					if (fqPlatform.contains("platform")) {
-						if ((fqPlatform.split(":"))[1].trim().equals((temp.getName()))) {
+					if (containPlatform) {
+						if (plats.contains(temp.getName())) {
 							if (isPlatformTrans) {
 								t.put(SentimentConstant.PLATFORM_ARRAY[Integer.parseInt(temp.getName())],
 										temp.getCount());

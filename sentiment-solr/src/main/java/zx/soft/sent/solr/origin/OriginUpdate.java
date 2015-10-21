@@ -107,9 +107,7 @@ public class OriginUpdate {
 							+ TimeUtils.transToSolrDateStr(rs.getTimestamp("cjsj").getTime())).toUpperCase();
 			boolean needed = true;
 			if (rs.getDate("jssj") != null && rs.getDate("jssj").before(new Date())) {
-				if (riakAccess.selectHotkeys("origins", identity + "_P1") != null) {
-					needed = false;
-				}
+				needed = false;
 			}
 			if (needed) {
 				task = new InternetTask();
