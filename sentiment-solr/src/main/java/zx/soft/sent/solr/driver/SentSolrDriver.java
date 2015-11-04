@@ -5,6 +5,7 @@ import zx.soft.sent.solr.firstpage.FirstPageRun;
 import zx.soft.sent.solr.firstpage.NegativeRecordsRun;
 import zx.soft.sent.solr.index.ImportRedisToSC;
 import zx.soft.sent.solr.insight.InsightHotKey;
+import zx.soft.sent.solr.insight.RelationCache;
 import zx.soft.sent.solr.insight.RelationCacheV2;
 import zx.soft.sent.solr.insight.UserActivity;
 import zx.soft.sent.solr.origin.OriginUpdate;
@@ -54,6 +55,8 @@ public class SentSolrDriver {
 			pgd.addClass("userActivity", UserActivity.class, "定时更新真实用户的活跃度");
 			// 在hefei06机器上运行
 			pgd.addClass("originUpdate", OriginUpdate.class, "定时更新溯源任务的缓存");
+			
+			pgd.addClass("relationCache", RelationCache.class, "定时更新重点人员关系");
 
 			pgd.addClass("relationCacheV2", RelationCacheV2.class, "定时更新新浪博文关系");
 			// 在hefei06机器上运行

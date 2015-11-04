@@ -36,45 +36,45 @@ public class QueryCore implements SinaIO {
 		cloudServer.connect();
 	}
 
-	public static void main(String[] args) throws SolrServerException, IOException {
-		//		SolrInputDocument doc = new SolrInputDocument();
-		//		doc.setField("id", "36A7D04692076971DB4D8D9AEBB1C207");
-		//		doc.setField("platform", 1);
-		//		doc.setField("original_id", "0");
-		//		doc.setField("original_uid", "0");
-		//		doc.setField("url", "http://js.people.com.cn/n/2015/0316/c360313-24165215.html");
-		//		doc.setField("title", "小龙女称压力大想轻生 吴绮莉否认精神虐待");
-		//		doc.setField("isharmful", false);
-		//		doc.setField("content", "据台湾媒体报道,昔日成龙外遇对象");
-		//		doc.setField("timestamp", new Date(1426464000000l));
-		//		doc.setField("source_id", 936);
-		//		doc.setField("lasttime", new Date(1442419007000l));
-		//		doc.setField("server_id", 3295);
-		//		doc.setField("identify_id", 1);
-		//		doc.setField("first_time", new Date(1442348249000l));
-		//		doc.setField("ip", "221.228.65.10");
-		//		doc.setField("location", "江苏省无锡市江阴市");
-		//		doc.setField("source_name", "网易新闻");
-		//		doc.setField("source_type", 1);
-		//		doc.setField("country_code", 1);
-		//		doc.setField("location_code", 320000);
-		//		doc.setField("province_code", 32);
-		//		doc.setField("cache_type", 1);
-		//		doc.setField("cache_id", "25136C5BF3E9C324216E1E9E0886358C");
-		//		doc.setField("cache_value", 611);
-		//
-		//		QueryCore test = new QueryCore();
-		//		test.cloudServer.add(doc);
-		//		test.cloudServer.commit();
-		//		test.cloudServer.deleteById("12312312312qwfa");
-		//		test.cloudServer.commit();
-
-		HttpSolrServer server = new HttpSolrServer("http://bigdata1:8983/solr/");
-		SolrQuery query = new SolrQuery();
-		query.setQuery("*:*");
-		System.out.println(server.query(query));
-
-	}
+//	public static void main(String[] args) throws SolrServerException, IOException {
+//		//		SolrInputDocument doc = new SolrInputDocument();
+//		//		doc.setField("id", "36A7D04692076971DB4D8D9AEBB1C207");
+//		//		doc.setField("platform", 1);
+//		//		doc.setField("original_id", "0");
+//		//		doc.setField("original_uid", "0");
+//		//		doc.setField("url", "http://js.people.com.cn/n/2015/0316/c360313-24165215.html");
+//		//		doc.setField("title", "小龙女称压力大想轻生 吴绮莉否认精神虐待");
+//		//		doc.setField("isharmful", false);
+//		//		doc.setField("content", "据台湾媒体报道,昔日成龙外遇对象");
+//		//		doc.setField("timestamp", new Date(1426464000000l));
+//		//		doc.setField("source_id", 936);
+//		//		doc.setField("lasttime", new Date(1442419007000l));
+//		//		doc.setField("server_id", 3295);
+//		//		doc.setField("identify_id", 1);
+//		//		doc.setField("first_time", new Date(1442348249000l));
+//		//		doc.setField("ip", "221.228.65.10");
+//		//		doc.setField("location", "江苏省无锡市江阴市");
+//		//		doc.setField("source_name", "网易新闻");
+//		//		doc.setField("source_type", 1);
+//		//		doc.setField("country_code", 1);
+//		//		doc.setField("location_code", 320000);
+//		//		doc.setField("province_code", 32);
+//		//		doc.setField("cache_type", 1);
+//		//		doc.setField("cache_id", "25136C5BF3E9C324216E1E9E0886358C");
+//		//		doc.setField("cache_value", 611);
+//		//
+//		//		QueryCore test = new QueryCore();
+//		//		test.cloudServer.add(doc);
+//		//		test.cloudServer.commit();
+//		//		test.cloudServer.deleteById("12312312312qwfa");
+//		//		test.cloudServer.commit();
+//
+//		HttpSolrServer server = new HttpSolrServer("http://bigdata1:8983/solr/");
+//		SolrQuery query = new SolrQuery();
+//		query.setQuery("*:*");
+//		System.out.println(server.query(query));
+//
+//	}
 
 	@Override
 	public void close() throws IOException {
