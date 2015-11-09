@@ -47,7 +47,7 @@ public class RelationServiceV2 {
 
 	private static Logger logger = LoggerFactory.getLogger(RelationServiceV2.class);
 
-	private static ImpalaConnPool impala = ImpalaConnPool.getPool(20, 5);
+	private static ImpalaConnPool impala = ImpalaConnPool.getPool(10, 5);
 
 	// 获取评论信息
 	public ResponseResult getPostDetail(RelationRequest request) {

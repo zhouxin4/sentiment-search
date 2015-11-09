@@ -106,6 +106,8 @@ public class RelationCache {
 			params.setFq("original_id:" + doc.getFieldValue("id").toString());
 			QueryResult tmp = QueryCore.getInstance().queryData(params, false);
 			for (SolrDocument document : tmp.getResults()) {
+				//				if (doc.getFieldValue("nickname").toString().equals(document.getFieldValue("nickname").toString()))
+				//					continue;
 				logger.info("存入关系：blog(" + doc.getFieldValue("id").toString() + ") --> comment:("
 						+ document.getFieldValue("id").toString() + ")");
 				HbaseDao dao = new HbaseDao(HbaseConstant.TABLE_NAME, 10);
