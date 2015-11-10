@@ -45,10 +45,10 @@ public class ImportCDHRedisToSC {
 	/**
 	 * 主函数
 	 */
-	public static void main(String[] args) {
-		ImportCDHRedisToSC importRedisToSC = new ImportCDHRedisToSC();
-		importRedisToSC.index();
-	}
+//	public static void main(String[] args) {
+//		ImportCDHRedisToSC importRedisToSC = new ImportCDHRedisToSC();
+//		importRedisToSC.index();
+//	}
 
 	public void index() {
 		List<String> records = null;

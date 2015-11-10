@@ -7,9 +7,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import zx.soft.utils.config.ConfigUtil;
+import zx.soft.utils.log.LogbackUtil;
 
 public class ImpalaJdbc {
+
+	private static Logger logger = LoggerFactory.getLogger(ImpalaJdbc.class);
 
 	private Connection conn;
 
@@ -43,7 +49,7 @@ public class ImpalaJdbc {
 		try {
 			conn.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.info(LogbackUtil.expection2Str(e));
 		}
 	}
 }

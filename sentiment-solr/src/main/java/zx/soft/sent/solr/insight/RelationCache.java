@@ -1,7 +1,6 @@
 package zx.soft.sent.solr.insight;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
 
@@ -64,6 +63,9 @@ public class RelationCache {
 				String trueUserId = user.getTureUserId();
 				List<Virtual> virtuals = TrueUserHelper.getVirtuals(trueUserId);
 				for (Virtual virtual : virtuals) {
+					if (virtual.getSource_id() == 7) {
+						continue;
+					}
 					try {
 						cacheHalfHourRelation(virtual, timeFilter);
 					} catch (Exception e) {
@@ -104,15 +106,15 @@ public class RelationCache {
 			params.setFq("original_id:" + doc.getFieldValue("id").toString());
 			QueryResult tmp = QueryCore.getInstance().queryData(params, false);
 			for (SolrDocument document : tmp.getResults()) {
+				//				if (doc.getFieldValue("nickname").toString().equals(document.getFieldValue("nickname").toString()))
+				//					continue;
+				logger.info("存入关系：blog(" + doc.getFieldValue("id").toString() + ") --> comment:("
+						+ document.getFieldValue("id").toString() + ")");
 				HbaseDao dao = new HbaseDao(HbaseConstant.TABLE_NAME, 10);
 				byte[] rowKey = CheckSumUtils.md5sum(virtual.getTrueUser() + document.getFieldValue("id").toString());
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TRUE_USER, virtual.getTrueUser());
-				try {
-					dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TIMESTAMP,
-							TimeUtils.tranSolrDateStrToMilli(doc.getFieldValue("timestamp").toString()) + "");
-				} catch (ParseException e) {
-					logger.error(LogbackUtil.expection2Str(e));
-				}
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TIMESTAMP,
+						TimeUtils.transTimeLong(doc.getFieldValue("timestamp").toString()) + "");
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.VIRTUAL,
 						doc.getFieldValue("nickname").toString());
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.PLATFORM,
@@ -121,18 +123,15 @@ public class RelationCache {
 						doc.getFieldValue("source_id").toString());
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.ID, doc.getFieldValue("id")
 						.toString());
-				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TEXT, doc.getFieldValue("title")
-						.toString() + "            " + doc.getFieldValue("content").toString());
-				//		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMPLETE_RECORD,
-				//				JsonUtils.toJsonWithoutPretty(weibo));
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TEXT,
+						(doc.getFieldValue("title") == null ? "" : doc.getFieldValue("title").toString())
+								+ "            " + doc.getFieldValue("content").toString());
+				//				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMPLETE_RECORD,
+				//						JsonUtils.toJsonWithoutPretty(weibo));
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_USER, document
 						.getFieldValue("nickname").toString());
-				try {
-					dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_TIME,
-							TimeUtils.tranSolrDateStrToMilli(document.getFieldValue("timestamp").toString()) + "");
-				} catch (ParseException e) {
-					logger.error(LogbackUtil.expection2Str(e));
-				}
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_TIME,
+						TimeUtils.transTimeLong(document.getFieldValue("timestamp").toString()) + "");
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_CONTEXT, document
 						.getFieldValue("content").toString());
 				dao.flushPuts();

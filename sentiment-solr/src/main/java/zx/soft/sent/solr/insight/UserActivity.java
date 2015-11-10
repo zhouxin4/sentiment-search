@@ -68,19 +68,25 @@ public class UserActivity {
 				List<Virtual> virtuals = TrueUserHelper.getVirtuals(trueUserId);
 				if (!virtuals.isEmpty()) {
 					for (Virtual virtual : virtuals) {
+						virtual.setNickname(virtual.getNickname().replaceAll("\\\\", "*"));
 						helper.add("(nickname:\"" + virtual.getNickname() + "\" AND source_id:"
 								+ virtual.getSource_id() + ")");
 					}
 					QueryParams tmp = params.clone();
 					tmp.setFq(params.getFq() + ";" + helper.getString());
-					QueryResult result = QueryCore.getInstance().queryData(tmp, false);
-					HttpClientDaoImpl client = new HttpClientDaoImpl();
-					String response = client.doPostAndGetResponse(ACTIVITY_URL, "{\"tureUserId\":\"" + trueUserId
-							+ "\",\"pre_count\":" + result.getNumFound() + "}");
-					JsonNode errorResponse = JsonNodeUtils
-							.getJsonNode(JsonNodeUtils.getJsonNode(response), "errorCode");
-					if (errorResponse.intValue() != 0) {
-						logger.info(response);
+					QueryResult result = null;
+					try {
+						result = QueryCore.getInstance().queryData(tmp, false);
+						HttpClientDaoImpl client = new HttpClientDaoImpl();
+						String response = client.doPostAndGetResponse(ACTIVITY_URL, "{\"tureUserId\":\"" + trueUserId
+								+ "\",\"pre_count\":" + result.getNumFound() + "}");
+						JsonNode errorResponse = JsonNodeUtils.getJsonNode(JsonNodeUtils.getJsonNode(response),
+								"errorCode");
+						if (errorResponse.intValue() != 0) {
+							logger.info(response);
+						}
+					} catch (Exception e) {
+						logger.error("Exception:{}", LogbackUtil.expection2Str(e));
 					}
 				}
 			}

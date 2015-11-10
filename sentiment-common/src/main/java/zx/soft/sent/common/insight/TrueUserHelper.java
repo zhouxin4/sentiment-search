@@ -20,7 +20,9 @@ public class TrueUserHelper {
 	private static Logger logger = LoggerFactory.getLogger(TrueUserHelper.class);
 
 	public static List<UserDomain> getTrueUsers(String areaCode) {
-		String data = "{\"areaCode\":" + areaCode + "}";
+
+		String data = "{"+ "\"areaCode\":" + areaCode + "," + "\"user\":false"+"}";
+		System.out.println(data);
 		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
 		String response = httpclient.doPostAndGetResponse(InsightConstant.TRUE_USER, data);
 		if (!"error".equals(response)) {

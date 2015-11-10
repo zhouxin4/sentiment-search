@@ -84,6 +84,29 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>zx.soft</groupId>
+			<artifactId>common-utils</artifactId>
+			<version>1.2.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>fr.inria.powerapi.sensor</groupId>
+					<artifactId>sensor-cpu-sigar</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.restlet.jse</groupId>
+					<artifactId>org.restlet.ext.jackson</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.github.jnr</groupId>
+					<artifactId>jnr-posix</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>net.java.dev.jna</groupId>
+					<artifactId>jna-platform</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -147,14 +147,18 @@ public class InsightController {
 		RelationRequest relationRequest = new RelationRequest();
 		relationRequest.setService(EndPoint.RELATION);
 		relationRequest.setTrueUserId(nickname);
-		if (request.getParameter("timestamp") != null) {
-			relationRequest.setTimestamp(request.getParameter("timestamp"));
-		}
-		if (request.getParameter("platform") != null) {
-			relationRequest.setPlatform(Integer.parseInt(request.getParameter("platform")));
-		}
-		if (request.getParameter("source_id") != null) {
-			relationRequest.setSource_id(Integer.parseInt(request.getParameter("source_id")));
+		if (request.getParameter("fq") != null) {
+			for (String fq : request.getParameter("fq").split(";")) {
+				if (fq.contains("timestamp")) {
+					relationRequest.setTimestamp(fq.split(":")[1]);
+					}
+				if (fq.contains("platform")) {
+					relationRequest.setPlatform(Integer.parseInt(fq.split(":")[1]));
+					}
+				if (fq.contains("source_id")) {
+					relationRequest.setSource_id(Integer.parseInt(fq.split(":")[1]));
+					}
+			}
 		}
 		logger.info(JsonUtils.toJsonWithoutPretty(relationRequest));
 		return relationService.relationAnalysed(relationRequest);
