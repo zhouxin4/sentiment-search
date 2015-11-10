@@ -7,6 +7,17 @@ create external table user_relat (rowKey string, tu string, vu string, ts bigint
  -- impala 
  INVALIDATE METADATA user_relat;
  
+ -- 复制表结构
+ create table user_rel LIKE user_relat STORED AS PARQUET;
+
+ -- 描述表结构
+ describe user_relat;
+
+ -- 复制原外部表数据到新表
+insert into user_relat select rowkey,tu,vu,ts,pl,sid,id,tx,cu,ct,cc from default.user_relat;
+
+ -- 统计信息
+ compute stats user_relat;
  
  
  -- 查询关系人员

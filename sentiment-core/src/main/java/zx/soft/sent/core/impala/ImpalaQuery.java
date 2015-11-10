@@ -61,7 +61,7 @@ public class ImpalaQuery {
 
 				@Override
 				public void run() {
-					String sql = "select count(*) AS num from user_relat";
+					String sql = "select count(*) AS num from parquet_compression.user_relat";
 					try {
 						ImpalaJdbc jdbc = pool.checkOut();
 						ResultSet result = jdbc.Query(sql);

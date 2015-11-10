@@ -9,7 +9,7 @@ public class HbaseConstant {
 	public static final String TABLE_NAME = "user_relation";
 
 	// hive映射表
-	public static final String HIVE_TABLE = "user_relat";
+	public static final String HIVE_TABLE = "parquet_compression.user_relat";
 
 	// 列簇
 	public static final String FAMILY_NAME = "cf";
