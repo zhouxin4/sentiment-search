@@ -17,8 +17,8 @@ import org.restlet.routing.Router;
 import zx.soft.sent.dao.firstpage.FirstPagePersistable;
 import zx.soft.sent.dao.firstpage.RiakFirstPage;
 import zx.soft.sent.web.resource.FirstPageResource;
-import zx.soft.utils.chars.JavaPattern;
 import zx.soft.utils.json.JsonNodeUtils;
+import zx.soft.utils.json.JsonUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -100,25 +100,7 @@ public class FirstPageApplication extends Application {
 		if (resultStr == null) {
 			return null;
 		}
-		JsonNode node = JsonNodeUtils.getJsonNode(resultStr);
-		String key = "", value = "";
-		Iterator<String> keys = null;
-		SolrDocument doc = null;
-		for (int i = 0; i < node.size(); i++) {
-			doc = new SolrDocument();
-			keys = node.get(i).fieldNames();
-			while (keys.hasNext()) {
-				key = keys.next();
-				value = node.get(i).get(key).toString().replaceAll("\"", "");
-				if (JavaPattern.isAllNum(value)) {
-					doc.setField(key, Long.parseLong(value));
-				} else {
-					doc.setField(key, value);
-				}
-			}
-			result.add(doc);
-		}
-		return result;
+		return JsonUtils.parseJsonArray(resultStr, SolrDocument.class);
 	}
 
 	private HashMap<String, Long> trans2Map(String jsonStr) {

@@ -150,14 +150,14 @@ public class InsightController {
 		if (request.getParameter("fq") != null) {
 			for (String fq : request.getParameter("fq").split(";")) {
 				if (fq.contains("timestamp")) {
-					relationRequest.setTimestamp(fq.split(":")[1]);
-					}
+					relationRequest.setTimestamp(fq);
+				}
 				if (fq.contains("platform")) {
 					relationRequest.setPlatform(Integer.parseInt(fq.split(":")[1]));
-					}
+				}
 				if (fq.contains("source_id")) {
 					relationRequest.setSource_id(Integer.parseInt(fq.split(":")[1]));
-					}
+				}
 			}
 		}
 		logger.info(JsonUtils.toJsonWithoutPretty(relationRequest));
@@ -174,6 +174,14 @@ public class InsightController {
 				return new ErrorResponse.Builder(-1, "params error!").build();
 			} else {
 				return relationService.getRelationPosts(request);
+			}
+		}
+		if (request.getService().equals(EndPoint.FOLLOWS)) {
+			if (Strings.isNullOrEmpty(request.getTrueUserId()) || request.getVirtuals().isEmpty()) {
+				logger.error("Params `nickname` is null.");
+				return new ErrorResponse.Builder(-1, "params error!").build();
+			} else {
+				return relationService.getFollowsDetail(request);
 			}
 		}
 		if (request.getService().equals(EndPoint.DETAIL) && Strings.isNullOrEmpty(request.getSolr_id())) {

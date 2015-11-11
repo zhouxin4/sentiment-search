@@ -24,6 +24,7 @@ import zx.soft.sent.common.insight.HbaseConstant;
 import zx.soft.sent.core.impala.ImpalaConnPool;
 import zx.soft.sent.core.impala.ImpalaJdbc;
 import zx.soft.sent.insight.domain.BlogResponse;
+import zx.soft.sent.insight.domain.FollowDetail;
 import zx.soft.sent.insight.domain.RelationRequest;
 import zx.soft.sent.insight.domain.RelationRequest.EndPoint;
 import zx.soft.sent.insight.domain.ResponseResult;
@@ -117,6 +118,56 @@ public class RelationServiceV2 {
 
 		return results;
 
+	}
+
+	public List<FollowDetail> getFollowsDetail(RelationRequest request) {
+		/**
+		 * SELECT cu,ct,cc,id,vu FROM parquet_compression.user_relat WHERE tu='1d07be0b539ecc4c8fc9ebff9e932718' AND pl=3 AND sid=7
+		 * AND ts BETWEEN 1444468712000 AND 1447147122000 AND cu = '野蜂飞舞蜂蜜', ORDER BY ct LIMIT 10 OFFSET 0 ;
+		 */
+		List<FollowDetail> followDetails = new ArrayList<>();
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append("SELECT " + HbaseConstant.COMMENT_USER + "," + HbaseConstant.COMMENT_TIME + ","
+				+ HbaseConstant.COMMENT_CONTEXT + "," + HbaseConstant.ID + "," + HbaseConstant.VIRTUAL + " FROM "
+				+ HbaseConstant.HIVE_TABLE + " WHERE ");
+		sBuilder.append(generateCONSQL(request));
+		sBuilder.append(" ORDER BY " + HbaseConstant.COMMENT_TIME + " LIMIT " + request.getRows() + " OFFSET "
+				+ request.getStart());
+		ImpalaJdbc jdbc = null;
+		try {
+			jdbc = impala.checkOut();
+		} catch (InterruptedException e1) {
+		}
+		if (jdbc == null) {
+			logger.error("Impala连接请求超时！");
+			return followDetails;
+		}
+		try {
+			ResultSet result = null;
+			try {
+				result = jdbc.Query(sBuilder.toString());
+				while (result.next()) {
+					FollowDetail followDetail = new FollowDetail.FollowBuilder()
+							.followUser(result.getString(HbaseConstant.COMMENT_USER))
+							.followTime(
+									TimeUtils.transToCommonDateStr(Long.parseLong(result
+											.getString(HbaseConstant.COMMENT_TIME))))
+							.followContent(result.getString(HbaseConstant.COMMENT_CONTEXT)).followType(0)
+							.followVirtual(result.getString(HbaseConstant.VIRTUAL))
+							.followId(result.getString(HbaseConstant.ID)).build();
+					followDetails.add(followDetail);
+				}
+			} finally {
+				if (result != null) {
+					result.close();
+				}
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			impala.checkIn(jdbc);
+		}
+		return followDetails;
 	}
 
 	// 查询重点人员与关系人员之间关系密切的帖文
@@ -434,12 +485,20 @@ public class RelationServiceV2 {
 	private static String generateCONSQL(RelationRequest request) {
 
 		StringBuilder sBuilder = new StringBuilder();
-		switch (request.getService()) {
-		case POST:
-			if (!StringUtils.isEmpty(request.getQ())) {
-				sBuilder.append(HbaseConstant.TEXT + " RLIKE " + "'.*" + request.getQ() + ".*'");
+		// 	获取单条博客的评论详情
+		if (request.getService() == EndPoint.DETAIL) {
+			if (request.getSolr_id() != null) {
+				sBuilder.append(" id='" + request.getSolr_id() + "'");
 			}
-		case RELATION:
+			if (!request.getVirtuals().isEmpty()) {
+				sBuilder.append(" AND " + HbaseConstant.COMMENT_USER + " IN (");
+				for (String vir : request.getVirtuals()) {
+					sBuilder.append("'" + vir + "',");
+				}
+				sBuilder.setLength(sBuilder.length() - 1);
+				sBuilder.append(")");
+			}
+		} else {
 			if (request.getTrueUserId() != null) {
 				if (sBuilder.length() > 0) {
 					sBuilder.append(" AND ");
@@ -467,31 +526,29 @@ public class RelationServiceV2 {
 				}
 				sBuilder.append(" AND ts BETWEEN " + startTime + " AND " + endTime);
 			}
-			if (!request.getVirtuals().isEmpty()) {
-				sBuilder.append(" AND " + HbaseConstant.COMMENT_USER + " IN (");
-				for (String vir : request.getVirtuals()) {
-					sBuilder.append("'" + vir + "',");
+			if (request.getService() == EndPoint.FOLLOWS) {
+				// 获取关注度详情
+				if (!request.getVirtuals().isEmpty()) {
+					sBuilder.append(" AND " + HbaseConstant.COMMENT_USER + " = " + "'" + request.getVirtuals().get(0)
+							+ "'");
 				}
-				sBuilder.setLength(sBuilder.length() - 1);
-				sBuilder.append(")");
-			}
-			break;
-		case DETAIL:
-			if (request.getSolr_id() != null) {
-				sBuilder.append(" id='" + request.getSolr_id() + "'");
-			}
-			if (!request.getVirtuals().isEmpty()) {
-				sBuilder.append(" AND " + HbaseConstant.COMMENT_USER + " IN (");
-				for (String vir : request.getVirtuals()) {
-					sBuilder.append("'" + vir + "',");
+			} else if (request.getService() == EndPoint.POST) {
+				// 获取发帖详情
+				if (!StringUtils.isEmpty(request.getQ())) {
+					sBuilder.append(HbaseConstant.TEXT + " RLIKE " + "'.*" + request.getQ() + ".*'");
 				}
-				sBuilder.setLength(sBuilder.length() - 1);
-				sBuilder.append(")");
+				if (!request.getVirtuals().isEmpty()) {
+					sBuilder.append(" AND " + HbaseConstant.COMMENT_USER + " IN (");
+					for (String vir : request.getVirtuals()) {
+						sBuilder.append("'" + vir + "',");
+					}
+					sBuilder.setLength(sBuilder.length() - 1);
+					sBuilder.append(")");
+				}
 			}
-			break;
+			// 默认生成关系人员
 
 		}
-		;
 
 		return sBuilder.toString();
 	}

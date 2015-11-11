@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.utils.config.ConfigUtil;
+import zx.soft.utils.time.TimeUtils;
 
 public class HBaseUtils {
 	private static Logger logger = LoggerFactory.getLogger(HBaseUtils.class);
@@ -233,6 +234,30 @@ public class HBaseUtils {
 		return false;
 	}
 
+	public static long getRowCount(String tableName, long startTime, long endTime, String family, String qualifier) {
+		long count = 0;
+		try {
+			HTableInterface table = null;
+			try {
+				table = conn.getTable(tableName);
+				Scan scan = new Scan();
+				scan.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier));
+				scan.setTimeRange(startTime, endTime);
+				scan.setCaching(10);
+				ResultScanner scanner = table.getScanner(scan);
+				for (Result result : scanner) {
+					count++;
+					System.out.println(count);
+				}
+			} finally {
+				table.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return count;
+	}
+
 	public static void close() {
 		try {
 			conn.close();
@@ -246,12 +271,15 @@ public class HBaseUtils {
 		String tableName = "twits";
 		String[] families = { "twits" };
 		try {
-			HBaseUtils.createTable(tableName, families);
+			//			HBaseUtils.createTable(tableName, families);
 			//			System.out.println(HBaseUtils.addData("users", "TheRealMT", "info", "name", "Mark Twain2"));
 			//			System.out.println(HBaseUtils.appendData("users", "TheRealMT", "info", "name", "append"));
 			//			System.out.println(HBaseUtils.addData("users", "TheRealMT", "info", "password", "example"));
 			//			System.out.println(HBaseUtils.getOneRow("users", "TheRealMT", "info"));
 			//			System.out.println(HBaseUtils.getAllVersion("users", "TheRealMT", "info", "name"));
+			System.out.println(HBaseUtils.getRowCount("history_weibo",
+					TimeUtils.transCurrentTime(System.currentTimeMillis(), 0, 0, 0, -1), System.currentTimeMillis(),
+					"history", "id"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

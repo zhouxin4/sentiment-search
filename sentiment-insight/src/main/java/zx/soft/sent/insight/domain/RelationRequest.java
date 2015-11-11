@@ -16,7 +16,7 @@ import com.google.common.base.MoreObjects;
  */
 public class RelationRequest {
 	public enum EndPoint {
-		RELATION, POST, DETAIL
+		RELATION, POST, DETAIL, FOLLOWS
 	};
 
 	// 关系分析请求
