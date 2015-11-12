@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.negative.sentiment.core.NegativeClassify;
+import zx.soft.sent.core.hbase.HBaseUtils;
 import zx.soft.sent.dao.firstpage.FirstPagePersistable;
 import zx.soft.sent.dao.firstpage.RiakFirstPage;
 import zx.soft.utils.algo.TopN;
@@ -21,6 +22,7 @@ import zx.soft.utils.checksum.CheckSumUtils;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.sort.InsertSort;
+import zx.soft.utils.time.TimeUtils;
 
 /**
  * OA首页信息定时分析：hefei07
@@ -74,6 +76,10 @@ public class FirstPageRun {
 		 * 2、统计当天各类数据的进入量，其中day=0表示当天的数据
 		 */
 		HashMap<String, Long> todayPlatformInputSum = oafirstPage.getTodayPlatformInputSum(0);
+		// 当天新浪微博的进入量
+		long sinaCount = HBaseUtils.getRowCount("history_weibo", TimeUtils.getMidnight(System.currentTimeMillis(), 0),
+				System.currentTimeMillis(), "history", "id");
+		todayPlatformInputSum.put("3", todayPlatformInputSum.get("3") + sinaCount);
 		firstPage.insertFirstPage(2, timeStrByHour(), JsonUtils.toJsonWithoutPretty(todayPlatformInputSum));
 		/**
 		 * 4、根据当天的微博数据，分别统计0、3、6、9、12、15、18、21时刻的四大微博数据进入总量；

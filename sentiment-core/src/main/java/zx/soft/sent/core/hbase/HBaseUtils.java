@@ -238,19 +238,22 @@ public class HBaseUtils {
 		long count = 0;
 		try {
 			HTableInterface table = null;
+			ResultScanner scanner = null;
 			try {
 				table = conn.getTable(tableName);
 				Scan scan = new Scan();
 				scan.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier));
 				scan.setTimeRange(startTime, endTime);
-				scan.setCaching(10);
-				ResultScanner scanner = table.getScanner(scan);
+				scan.setCaching(1000);
+				scanner = table.getScanner(scan);
 				for (Result result : scanner) {
 					count++;
 					System.out.println(count);
+
 				}
 			} finally {
 				table.close();
+				scanner.close();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -268,6 +271,7 @@ public class HBaseUtils {
 	}
 
 	public static void main(String[] args) {
+		long start = System.currentTimeMillis();
 		String tableName = "twits";
 		String[] families = { "twits" };
 		try {
@@ -277,12 +281,14 @@ public class HBaseUtils {
 			//			System.out.println(HBaseUtils.addData("users", "TheRealMT", "info", "password", "example"));
 			//			System.out.println(HBaseUtils.getOneRow("users", "TheRealMT", "info"));
 			//			System.out.println(HBaseUtils.getAllVersion("users", "TheRealMT", "info", "name"));
-			System.out.println(HBaseUtils.getRowCount("history_weibo",
-					TimeUtils.transCurrentTime(System.currentTimeMillis(), 0, 0, 0, -1), System.currentTimeMillis(),
-					"history", "id"));
+			long s_t = TimeUtils.getMidnight(System.currentTimeMillis(), 0);
+			System.out.println(TimeUtils.transToCommonDateStr(s_t));
+			System.err.println(HBaseUtils.getRowCount("history_weibo",
+					TimeUtils.getMidnight(System.currentTimeMillis(), 0), System.currentTimeMillis(), "history", "id"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println(TimeUtils.convertMilliToStr(System.currentTimeMillis() - start));
 	}
 }
