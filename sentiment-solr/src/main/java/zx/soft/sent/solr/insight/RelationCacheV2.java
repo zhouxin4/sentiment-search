@@ -28,8 +28,10 @@ public class RelationCacheV2 {
 
 	private static Logger logger = LoggerFactory.getLogger(RelationCacheV2.class);
 
-	private static String LASTEST_BLOGS = "http://192.168.32.22:8922/weibos/lastest?screen_name=%s";
-	private static String COMMENTS = "http://192.168.32.22:8922/weibos/comments/%s";
+	private static String BASE_URL = "http://192.168.32.22:8922/weibos";
+	private static String LASTEST_BLOGS = BASE_URL + "/lastest?screen_name=%s";
+	private static String COMMENTS = BASE_URL + "/comments/%s";
+	private static String REPOSTS = BASE_URL + "/reposts/%s";
 	private static final String WEIBO_BASE_URL = "http://weibo.com/";
 
 	static {
@@ -130,41 +132,6 @@ public class RelationCacheV2 {
 		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_USER, comment.getNickname());
 		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_TIME, comment.getTimestamp() + "");
 		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_CONTEXT, comment.getContent());
-		// Put put = new Put(rowKey);
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.TRUE_USER),
-		// Bytes.toBytes(virtual.getTrueUser()));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.TIMESTAMP),
-		// Bytes.toBytes(weibo.getTimestamp() + ""));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.VIRTUAL),
-		// Bytes.toBytes(weibo.getNickname()));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.PLATFORM),
-		// Bytes.toBytes(weibo.getPlatform() + ""));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.SOURCE_ID),
-		// Bytes.toBytes(weibo.getSource_id() + ""));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.ID), Bytes.toBytes(weibo.getId()));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.TEXT),
-		// Bytes.toBytes(weibo.getTitle() + "            " +
-		// weibo.getContent()));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.COMPLETE_RECORD),
-		// Bytes.toBytes(JsonUtils.toJsonWithoutPretty(weibo)));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.COMMENT_USER),
-		// Bytes.toBytes(comment.getNickname()));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.COMMENT_TIME),
-		// Bytes.toBytes(comment.getTimestamp() + ""));
-		// put.add(Bytes.toBytes(HbaseConstant.FAMILY_NAME),
-		// Bytes.toBytes(HbaseConstant.COMMENT_CONTEXT),
-		// Bytes.toBytes(comment.getContent()));
-		// HBaseUtils.put(HbaseConstant.TABLE_NAME, put);
 		dao.flushPuts();
 	}
 

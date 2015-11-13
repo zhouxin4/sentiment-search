@@ -24,7 +24,7 @@ import zx.soft.sent.common.insight.HbaseConstant;
 import zx.soft.sent.core.impala.ImpalaConnPool;
 import zx.soft.sent.core.impala.ImpalaJdbc;
 import zx.soft.sent.insight.domain.BlogResponse;
-import zx.soft.sent.insight.domain.FollowDetail;
+import zx.soft.sent.insight.domain.FollowDetail2;
 import zx.soft.sent.insight.domain.RelationRequest;
 import zx.soft.sent.insight.domain.RelationRequest.EndPoint;
 import zx.soft.sent.insight.domain.ResponseResult;
@@ -120,12 +120,12 @@ public class RelationServiceV2 {
 
 	}
 
-	public List<FollowDetail> getFollowsDetail(RelationRequest request) {
+	public List<FollowDetail2> getFollowsDetail(RelationRequest request) {
 		/**
 		 * SELECT cu,ct,cc,id,vu FROM parquet_compression.user_relat WHERE tu='1d07be0b539ecc4c8fc9ebff9e932718' AND pl=3 AND sid=7
 		 * AND ts BETWEEN 1444468712000 AND 1447147122000 AND cu = '野蜂飞舞蜂蜜', ORDER BY ct LIMIT 10 OFFSET 0 ;
 		 */
-		List<FollowDetail> followDetails = new ArrayList<>();
+		List<FollowDetail2> followDetails = new ArrayList<>();
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("SELECT " + HbaseConstant.COMMENT_USER + "," + HbaseConstant.COMMENT_TIME + ","
 				+ HbaseConstant.COMMENT_CONTEXT + "," + HbaseConstant.ID + "," + HbaseConstant.VIRTUAL + " FROM "
@@ -142,20 +142,25 @@ public class RelationServiceV2 {
 			logger.error("Impala连接请求超时！");
 			return followDetails;
 		}
+		List<String> ids = new ArrayList<>();
+		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
 		try {
 			ResultSet result = null;
 			try {
 				result = jdbc.Query(sBuilder.toString());
 				while (result.next()) {
-					FollowDetail followDetail = new FollowDetail.FollowBuilder()
-							.followUser(result.getString(HbaseConstant.COMMENT_USER))
-							.followTime(
-									TimeUtils.transToCommonDateStr(Long.parseLong(result
-											.getString(HbaseConstant.COMMENT_TIME))))
-							.followContent(result.getString(HbaseConstant.COMMENT_CONTEXT)).followType(0)
-							.followVirtual(result.getString(HbaseConstant.VIRTUAL))
-							.followId(result.getString(HbaseConstant.ID)).build();
+					FollowDetail2 followDetail = new FollowDetail2();
+					followDetail.setFollowUser(result.getString(HbaseConstant.COMMENT_USER));
+					followDetail.setFollowTime(TimeUtils.transToCommonDateStr(Long.parseLong(result
+							.getString(HbaseConstant.COMMENT_TIME))));
+					followDetail.setFollowContent(result.getString(HbaseConstant.COMMENT_CONTEXT));
+					followDetail.setFollowType(0);
+					followDetail.setFollowVirtual(result.getString(HbaseConstant.VIRTUAL));
 					followDetails.add(followDetail);
+					String id = result.getString(HbaseConstant.ID);
+					logger.info("id: {}", id);
+					ids.add(id);
+					helper.add(id);
 				}
 			} finally {
 				if (result != null) {
@@ -167,6 +172,24 @@ public class RelationServiceV2 {
 		} finally {
 			impala.checkIn(jdbc);
 		}
+
+		if (!ids.isEmpty()) {
+			QueryParams docParams = new QueryParams();
+			docParams.setQ("*:*");
+			docParams.setFq("id:(" + helper.getString() + ")");
+
+			QueryResult docResult = QueryCore.getInstance().queryData(docParams, false);
+			for (int i = 0; i < ids.size(); i++) {
+				String id = ids.get(i);
+				for (SolrDocument doc : docResult.getResults()) {
+					if (id.equals(doc.getFieldValue("id"))) {
+						followDetails.get(i).setFollowDoc(doc);
+						break;
+					}
+				}
+			}
+		}
+
 		return followDetails;
 	}
 

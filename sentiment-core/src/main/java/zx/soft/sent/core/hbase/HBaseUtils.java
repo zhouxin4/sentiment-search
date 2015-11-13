@@ -1,6 +1,7 @@
 package zx.soft.sent.core.hbase;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
@@ -15,6 +16,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.Append;
 import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HConnectionManager;
@@ -156,6 +158,24 @@ public class HBaseUtils {
 		return false;
 	}
 
+	public static Cell getOneColumn(String tableName, String rowKey, String family, String qualifier) {
+		try {
+			HTableInterface table = null;
+			try {
+				table = conn.getTable(tableName);
+				Get get = new Get(Bytes.toBytes(rowKey));
+				get.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier));
+				Result result = table.get(get);
+				return result.getColumnLatestCell(Bytes.toBytes(family), Bytes.toBytes(qualifier));
+			} finally {
+				table.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public static boolean scanRows(String tableName, String startRow, String stopRow) {
 		try {
 			HTableInterface table = null;
@@ -234,33 +254,6 @@ public class HBaseUtils {
 		return false;
 	}
 
-	public static long getRowCount(String tableName, long startTime, long endTime, String family, String qualifier) {
-		long count = 0;
-		try {
-			HTableInterface table = null;
-			ResultScanner scanner = null;
-			try {
-				table = conn.getTable(tableName);
-				Scan scan = new Scan();
-				scan.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier));
-				scan.setTimeRange(startTime, endTime);
-				scan.setCaching(1000);
-				scanner = table.getScanner(scan);
-				for (Result result : scanner) {
-					count++;
-					System.out.println(count);
-
-				}
-			} finally {
-				table.close();
-				scanner.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return count;
-	}
-
 	public static void close() {
 		try {
 			conn.close();
@@ -272,7 +265,7 @@ public class HBaseUtils {
 
 	public static void main(String[] args) {
 		long start = System.currentTimeMillis();
-		String tableName = "twits";
+		String tableName = "data_count";
 		String[] families = { "twits" };
 		try {
 			//			HBaseUtils.createTable(tableName, families);
@@ -281,10 +274,17 @@ public class HBaseUtils {
 			//			System.out.println(HBaseUtils.addData("users", "TheRealMT", "info", "password", "example"));
 			//			System.out.println(HBaseUtils.getOneRow("users", "TheRealMT", "info"));
 			//			System.out.println(HBaseUtils.getAllVersion("users", "TheRealMT", "info", "name"));
-			long s_t = TimeUtils.getMidnight(System.currentTimeMillis(), 0);
-			System.out.println(TimeUtils.transToCommonDateStr(s_t));
-			System.err.println(HBaseUtils.getRowCount("history_weibo",
-					TimeUtils.getMidnight(System.currentTimeMillis(), 0), System.currentTimeMillis(), "history", "id"));
+			Calendar date = Calendar.getInstance();
+			date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DAY_OF_MONTH));
+			date.set(Calendar.MILLISECOND, 0);
+			date.set(Calendar.SECOND, 0);
+			date.set(Calendar.MINUTE, 0);
+			date.set(Calendar.HOUR_OF_DAY, date.get(Calendar.HOUR_OF_DAY) - 1);
+			long qualifier = date.getTimeInMillis();
+			date.set(Calendar.HOUR_OF_DAY, 0);
+			long rowKey = date.getTimeInMillis();
+			Cell cell = getOneColumn(tableName, rowKey + "", "count", qualifier + "");
+			System.out.println(Bytes.toString(CellUtil.cloneValue(cell)));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

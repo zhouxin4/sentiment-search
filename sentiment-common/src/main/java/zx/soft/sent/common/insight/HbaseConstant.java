@@ -47,4 +47,7 @@ public class HbaseConstant {
 	// 评论内容
 	public static final String COMMENT_CONTEXT = "cc";
 
+	// 关注类型
+	public static final String FOLLOW_TYPE = "ft";
+
 }
