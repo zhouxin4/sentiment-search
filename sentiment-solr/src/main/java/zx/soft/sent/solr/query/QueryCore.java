@@ -35,7 +35,6 @@ import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.domain.SimpleFacetInfo;
 import zx.soft.sent.solr.exception.SpiderSearchException;
 import zx.soft.utils.config.ConfigUtil;
-import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.regex.RegexUtils;
 import zx.soft.utils.string.StringUtils;
@@ -82,10 +81,10 @@ public class QueryCore {
 	 * 测试函数
 	 */
 	public static void main(String[] args) {
-		QueryCore search = QueryCore.getInstance();
-		QueryParams queryParams = new QueryParams();
-		queryParams.setQ("*:*");
-		queryParams.setFq("id:42009F64DB89C1BC0BEA2A046B87BF3D");
+		//		QueryCore search = QueryCore.getInstance();
+		//		QueryParams queryParams = new QueryParams();
+		//		queryParams.setQ("*:*");
+		//		queryParams.setFq("id:42009F64DB89C1BC0BEA2A046B87BF3D");
 		//timestamp:[2014-04-22T00:00:00Z TO 2014-04-23T00:00:00Z]
 		//		queryParams.setSort("timestamp:desc"); // lasttime:desc
 		//		queryParams.setStart(0);
@@ -100,29 +99,28 @@ public class QueryCore {
 		//		queryParams.setFacetRangeEnd("2015-07-13T00:00:00Z");
 		//		queryParams.setFacetRangeGap("+1HOUR");
 		//		queryParams.setFacetField("source_id");
-		QueryResponse result = search.queryDataWithoutView(queryParams, true);
 		//		List<SolrInputDocument> docs = new ArrayList<>();
 		//		for (SolrDocument doc : result.getResults()) {
 		//			docs.add(transSolrDocumentToInputDocument(doc));
 		//		}
 		//		search.addDocToSolr(docs);
-		SolrQuery params = new SolrQuery();
-		params.setQuery("*:*");
-		params.addFilterQuery("id:A230370D7ED0C45784D31AD673D8C1A2");
-		QueryResponse response = null;
-		try {
-			response = search.cloudServer.query(params);
-		} catch (SolrServerException e) {
-			e.printStackTrace();
-		}
-
-		List<String> records = new ArrayList<>();
-		for (SolrDocument doc : response.getResults()) {
-			records.add(JsonUtils.toJsonWithoutPretty(doc));
-		}
-
-		System.out.println(JsonUtils.toJson(records));
-		search.close();
+		//		SolrQuery params = new SolrQuery();
+		//		params.setQuery("*:*");
+		//		params.addFilterQuery("nickname:\"Wen YunChao (温云超)\"");
+		//		QueryResponse response = null;
+		//		try {
+		//			response = search.cloudServer.query(params);
+		//		} catch (SolrServerException e) {
+		//			e.printStackTrace();
+		//		}
+		//
+		//		List<String> records = new ArrayList<>();
+		//		for (SolrDocument doc : response.getResults()) {
+		//			records.add(JsonUtils.toJsonWithoutPretty(doc));
+		//		}
+		//
+		//		System.out.println(JsonUtils.toJson(records));
+		//		search.close();
 	}
 
 	public void addDocToSolr(List<SolrInputDocument> docs) {
@@ -402,12 +400,18 @@ public class QueryCore {
 				if (fq.isEmpty()) {
 					continue;
 				}
+				if (fq.contains("AND") || fq.contains("OR")) {
+					query.addFilterQuery(fq);
+					continue;
+				}
 				if (fq.contains("source_id")) {
 					if (transCacheFq(fq) != "") {
 						query.addFilterQuery(transCacheFq(fq));
 					} else {
 						logger.error("fq=" + fq + " is null.");
 					}
+				} else if (fq.contains("nickname")) {
+					query.addFilterQuery(transNicknameFq(fq));
 				} else {
 					query.addFilterQuery(transFq(fq));
 				}
@@ -489,9 +493,6 @@ public class QueryCore {
 	}
 
 	private String transCacheFq(String fqs) {
-		if (fqs.contains("AND") || fqs.contains("OR")) {
-			return fqs;
-		}
 		String result = "";
 		String sites = fqs.split(":")[1];
 		if ((sites.indexOf(",") < 0) && (sites.length() == 32)) {
@@ -515,9 +516,6 @@ public class QueryCore {
 	}
 
 	public static String transFq(String fqs) {
-		if (fqs.contains("AND") || fqs.contains("OR")) {
-			return fqs;
-		}
 		int index = fqs.indexOf(":");
 		String result = "";
 		for (String str : fqs.substring(index + 1).split(",")) {
@@ -528,6 +526,40 @@ public class QueryCore {
 			result = result.replace("OR", "AND");
 		}
 		return result;
+	}
+
+	/**
+	 * 	String content1 = "nickname:\"北风（温云超, Yunchao Wen）\",\"北风（温云超, Yunchao Wen）\"";
+	 *	System.out.println(findMatchStrs(content1, "\"(.*?)\"", false));
+	 *	System.out.println(findMatchStrs(content1, "\"(.*?)\"", true));
+	 * @param fqs
+	 * @return
+	 */
+	public static String transNicknameFq(String fqs) {
+		int index = fqs.indexOf(":");
+		String result = "";
+		fqs += ",";
+		List<String> nicknames = RegexUtils.findMatchStrs(fqs.substring(index + 1), "\"(.*?)\",", false);
+		if (nicknames.isEmpty()) {
+			for (String str : fqs.substring(index + 1).split(",")) {
+				result = result + fqs.substring(0, index) + ":" + str + " OR ";
+			}
+			result = result.substring(0, result.length() - 4);
+			if (fqs.charAt(0) == '-' || fqs.contains(";-")) {
+				result = result.replace("OR", "AND");
+			}
+			return result;
+		} else {
+			for (String str : nicknames) {
+				result = result + fqs.substring(0, index) + ":\"" + str + "\" OR ";
+			}
+			result = result.substring(0, result.length() - 4);
+			if (fqs.charAt(0) == '-' || fqs.contains(";-")) {
+				result = result.replace("OR", "AND");
+			}
+			return result;
+		}
+
 	}
 
 	/**
