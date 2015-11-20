@@ -21,6 +21,7 @@ import zx.soft.utils.checksum.CheckSumUtils;
 import zx.soft.utils.codec.URLCodecUtils;
 import zx.soft.utils.http.HttpClientDaoImpl;
 import zx.soft.utils.json.JsonUtils;
+import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.string.StringUtils;
 import zx.soft.weibo.sina.common.WidToMid;
 
@@ -69,7 +70,7 @@ public class RelationCacheV2 {
 				String trueUserId = user.getTureUserId();
 				List<Virtual> virtuals = TrueUserHelper.getVirtuals(trueUserId);
 				for (Virtual virtual : virtuals) {
-					// 新浪微博
+					//					 新浪微博
 					if (virtual.getSource_id() == 7) {
 						String url = String
 								.format(LASTEST_BLOGS, URLCodecUtils.encoder(virtual.getNickname(), "UTF-8"));
@@ -84,6 +85,22 @@ public class RelationCacheV2 {
 							RecordInfo weiboInfo = transWeiboToRecord(weibo);
 							logger.info(weiboInfo.toString());
 							PostDataHelper.getInstance().addRecord(JsonUtils.toJsonWithoutPretty(weiboInfo));
+							String repostUrl = String.format(REPOSTS, weibo.getId());
+							String repostResult = new HttpClientDaoImpl().doGet(repostUrl, headers);
+							try {
+								List<Comment> reposts = JsonUtils.parseJsonArray(repostResult, Comment.class);
+
+								for (Comment repost : reposts) {
+									RecordInfo repostInfo = transCommentToRecord(repost);
+									PostDataHelper.getInstance().addRecord(JsonUtils.toJsonWithoutPretty(repostInfo));
+									logger.info(repostInfo.toString());
+									cacheOneBlogRelation(virtual, weiboInfo, repostInfo, "1");
+									logger.info("存储关系: webId({}) -- > commentId({}),originId({})", weiboInfo.getId(),
+											repostInfo.getId(), repostInfo.getOriginal_id());
+								}
+							} catch (Exception e) {
+								logger.error(LogbackUtil.expection2Str(e));
+							}
 
 							String commentUrl = String.format(COMMENTS, weibo.getId());
 							String commentResult = new HttpClientDaoImpl().doGet(commentUrl, headers);
@@ -93,7 +110,7 @@ public class RelationCacheV2 {
 								RecordInfo commentInfo = transCommentToRecord(comment);
 								PostDataHelper.getInstance().addRecord(JsonUtils.toJsonWithoutPretty(commentInfo));
 								logger.info(commentInfo.toString());
-								cacheOneBlogRelation(virtual, weiboInfo, commentInfo);
+								cacheOneBlogRelation(virtual, weiboInfo, commentInfo, "0");
 								logger.info("存储关系: webId({}) -- > commentId({}),originId({})", weiboInfo.getId(),
 										commentInfo.getId(), commentInfo.getOriginal_id());
 							}
@@ -109,7 +126,7 @@ public class RelationCacheV2 {
 		logger.info("Finishing query OA-FirstPage data...");
 	}
 
-	private void cacheOneBlogRelation(Virtual virtual, RecordInfo weibo, RecordInfo comment) {
+	private void cacheOneBlogRelation(Virtual virtual, RecordInfo weibo, RecordInfo comment, String followType) {
 		HbaseDao dao = new HbaseDao(HbaseConstant.TABLE_NAME, 10);
 		//		 byte[] md5 = CheckSumUtils.md5sum(virtual.getTrueUser());
 		//		 byte[] uuid = CheckSumUtils.md5sum(comment.getId());
@@ -132,6 +149,7 @@ public class RelationCacheV2 {
 		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_USER, comment.getNickname());
 		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_TIME, comment.getTimestamp() + "");
 		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_CONTEXT, comment.getContent());
+		dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.FOLLOW_TYPE, followType);
 		dao.flushPuts();
 	}
 
@@ -191,7 +209,6 @@ public class RelationCacheV2 {
 		recordInfo.setOriginal_url(WEIBO_BASE_URL + comment.getOriginal_uid() + "/"
 				+ WidToMid.wid2mid(comment.getOriginal_id()));
 		recordInfo.setOriginal_uid(String.valueOf(comment.getOriginal_uid()));
-
 		// recordInfo.setLocation(user.getFieldValue("location").toString());
 		// recordInfo.setCity_code(Integer.parseInt(user.getFieldValue("city").toString()));
 		// recordInfo.setProvince_code(Integer.parseInt(user.getFieldValue("province").toString()));
