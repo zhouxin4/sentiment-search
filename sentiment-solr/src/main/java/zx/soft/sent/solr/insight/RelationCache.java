@@ -112,6 +112,7 @@ public class RelationCache {
 						+ document.getFieldValue("id").toString() + ")");
 				HbaseDao dao = new HbaseDao(HbaseConstant.TABLE_NAME, 10);
 				byte[] rowKey = CheckSumUtils.md5sum(virtual.getTrueUser() + document.getFieldValue("id").toString());
+
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TRUE_USER, virtual.getTrueUser());
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.TIMESTAMP,
 						TimeUtils.transTimeLong(doc.getFieldValue("timestamp").toString()) + "");
@@ -128,12 +129,16 @@ public class RelationCache {
 								+ "            " + doc.getFieldValue("content").toString());
 				//				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMPLETE_RECORD,
 				//						JsonUtils.toJsonWithoutPretty(weibo));
-				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_USER, document
-						.getFieldValue("nickname").toString());
+				try {
+					dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_USER, document
+							.getFieldValue("nickname").toString());
+				} catch (Exception e) {
+				}
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_TIME,
 						TimeUtils.transTimeLong(document.getFieldValue("timestamp").toString()) + "");
 				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.COMMENT_CONTEXT, document
 						.getFieldValue("content").toString());
+				dao.addSingleColumn(rowKey, HbaseConstant.FAMILY_NAME, HbaseConstant.FOLLOW_TYPE, "0");
 				dao.flushPuts();
 			}
 		}
