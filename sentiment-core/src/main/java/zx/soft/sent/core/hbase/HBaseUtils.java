@@ -269,21 +269,18 @@ public class HBaseUtils {
 		String[] families = { "twits" };
 		try {
 			//			HBaseUtils.createTable(tableName, families);
-			//			System.out.println(HBaseUtils.addData("users", "TheRealMT", "info", "name", "Mark Twain2"));
-			//			System.out.println(HBaseUtils.appendData("users", "TheRealMT", "info", "name", "append"));
-			//			System.out.println(HBaseUtils.addData("users", "TheRealMT", "info", "password", "example"));
-			//			System.out.println(HBaseUtils.getOneRow("users", "TheRealMT", "info"));
-			//			System.out.println(HBaseUtils.getAllVersion("users", "TheRealMT", "info", "name"));
 			Calendar date = Calendar.getInstance();
 			date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DAY_OF_MONTH));
 			date.set(Calendar.MILLISECOND, 0);
 			date.set(Calendar.SECOND, 0);
 			date.set(Calendar.MINUTE, 0);
 			date.set(Calendar.HOUR_OF_DAY, date.get(Calendar.HOUR_OF_DAY) - 1);
+			//			date.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH) - 1);
 			long qualifier = date.getTimeInMillis();
 			date.set(Calendar.HOUR_OF_DAY, 0);
 			long rowKey = date.getTimeInMillis();
 			Cell cell = getOneColumn(tableName, rowKey + "", "count", qualifier + "");
+			//			Cell cell = getOneColumn(tableName, "1448294400000", "count", "1448341200000");
 			System.out.println(Bytes.toString(CellUtil.cloneValue(cell)));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

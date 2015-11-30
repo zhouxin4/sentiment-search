@@ -30,9 +30,8 @@
 		</rollingPolicy>
 	</appender>
 
-	<root level="DEBUGE">
+	<root level="DEBUG">
 		<appender-ref ref="FILE" />
 		<appender-ref ref="STDOUT" />
 	</root>
-
 </configuration>

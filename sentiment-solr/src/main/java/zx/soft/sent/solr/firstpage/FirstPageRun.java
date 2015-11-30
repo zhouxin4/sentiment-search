@@ -79,18 +79,22 @@ public class FirstPageRun {
 		 */
 		HashMap<String, Long> todayPlatformInputSum = oafirstPage.getTodayPlatformInputSum(0);
 		// 当天新浪微博的进入量
-		Calendar date = Calendar.getInstance();
-		date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DAY_OF_MONTH));
-		date.set(Calendar.MILLISECOND, 0);
-		date.set(Calendar.SECOND, 0);
-		date.set(Calendar.MINUTE, 0);
-		date.set(Calendar.HOUR_OF_DAY, date.get(Calendar.HOUR_OF_DAY) - 1);
-		long qualifier = date.getTimeInMillis();
-		date.set(Calendar.HOUR_OF_DAY, 0);
-		long rowKey = date.getTimeInMillis();
-		Cell cell = HBaseUtils.getOneColumn("data_count", rowKey + "", "count", qualifier + "");
-		String sinaCount = Bytes.toString(CellUtil.cloneValue(cell));
-		todayPlatformInputSum.put("3", todayPlatformInputSum.get("3") + Integer.parseInt(sinaCount));
+		try {
+			Calendar date = Calendar.getInstance();
+			date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DAY_OF_MONTH));
+			date.set(Calendar.MILLISECOND, 0);
+			date.set(Calendar.SECOND, 0);
+			date.set(Calendar.MINUTE, 0);
+			date.set(Calendar.HOUR_OF_DAY, date.get(Calendar.HOUR_OF_DAY) - 1);
+			long qualifier = date.getTimeInMillis();
+			date.set(Calendar.HOUR_OF_DAY, 0);
+			long rowKey = date.getTimeInMillis();
+			Cell cell = HBaseUtils.getOneColumn("data_count", rowKey + "", "count", qualifier + "");
+			String sinaCount = Bytes.toString(CellUtil.cloneValue(cell));
+			todayPlatformInputSum.put("3", todayPlatformInputSum.get("3") + Integer.parseInt(sinaCount));
+		} catch (Exception e) {
+			logger.info(LogbackUtil.expection2Str(e));
+		}
 		firstPage.insertFirstPage(2, timeStrByHour(), JsonUtils.toJsonWithoutPretty(todayPlatformInputSum));
 		/**
 		 * 4、根据当天的微博数据，分别统计0、3、6、9、12、15、18、21时刻的四大微博数据进入总量；
