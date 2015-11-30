@@ -21,7 +21,7 @@ public class InsightDriver {
 		try {
 			// 运行在192.168.32.16机器上
 			// 线上环境： 目录：/home/zxdfs/run-work/api/insights  端口：8912
-			// 关系分析测试： 目录： /home/zxdfs/run-work/api/insights 端口：8922
+			// 关系分析测试： 目录： /home/zxdfs/run-work/api/insights_relation 端口：8922
 			pgd.addClass("insightApiServer", InsightApiServer.class, "重点人员发帖趋势接口");
 			pgd.driver(args);
 			// Success

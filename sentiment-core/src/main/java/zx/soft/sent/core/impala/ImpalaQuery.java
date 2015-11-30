@@ -4,8 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class ImpalaQuery {
 
@@ -38,6 +36,7 @@ public class ImpalaQuery {
 	public static void getRelation(String trueUser) throws SQLException {
 		String sql = "select 1";
 		ResultSet result = impala.Query(sql);
+
 		while (result.next()) {
 			System.out.println(result.getString(1));
 		}
@@ -53,76 +52,82 @@ public class ImpalaQuery {
 	}
 
 	public static void main(String[] args) throws SQLException {
-		int num = 10;
-		final CountDownLatch latch = new CountDownLatch(num);
-		final ImpalaConnPool pool = ImpalaConnPool.getPool(5, 100);
-		for (int i = 0; i < num; i++) {
-			new Thread(new Runnable() {
+		String sql = "insert overwrite user_rel_parquet select rowkey,tu,vu,ts,pl,sid,id,tx,cu,ct,cc,ft from default.user_relat";
+		ResultSet result = impala.Query(sql);
+		while (result.next()) {
+			System.out.println(result.getInt("cc"));
 
-				@Override
-				public void run() {
-					String sql = "select count(*) AS num from parquet_compression.user_relat";
-					try {
-						ImpalaJdbc jdbc = pool.checkOut();
-						ResultSet result = jdbc.Query(sql);
-						while (result.next()) {
-							System.out.println(result.getInt("num"));
-						}
-						result.close();
-						pool.checkIn(jdbc);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					latch.countDown();
-				}
-			}).start();
 		}
-		try {
-			latch.await();
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-		System.out.println("----------------------------------------------");
-		try {
-			TimeUnit.MINUTES.sleep(2);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		final CountDownLatch latch2 = new CountDownLatch(num);
-
-		for (int i = 0; i < num; i++) {
-			new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					String sql = "select count(*) AS num from user_relat";
-					try {
-						ImpalaJdbc jdbc = pool.checkOut();
-						ResultSet result = jdbc.Query(sql);
-						while (result.next()) {
-							System.out.println(result.getInt("num"));
-						}
-						result.close();
-						pool.checkIn(jdbc);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					latch2.countDown();
-				}
-			}).start();
-		}
-		try {
-			latch2.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println("----------------------------------------------");
-
-		pool.clear();
+		//		int num = 10;
+		//		final CountDownLatch latch = new CountDownLatch(num);
+		//		final ImpalaConnPool pool = ImpalaConnPool.getPool(5, 100);
+		//		for (int i = 0; i < num; i++) {
+		//			new Thread(new Runnable() {
+		//
+		//				@Override
+		//				public void run() {
+		//					String sql = "select count(*) AS num from parquet_compression.user_relat";
+		//					try {
+		//						ImpalaJdbc jdbc = pool.checkOut();
+		//						ResultSet result = jdbc.Query(sql);
+		//						while (result.next()) {
+		//							System.out.println(result.getInt("num"));
+		//						}
+		//						result.close();
+		//						pool.checkIn(jdbc);
+		//					} catch (Exception e) {
+		//						// TODO Auto-generated catch block
+		//						e.printStackTrace();
+		//					}
+		//					latch.countDown();
+		//				}
+		//			}).start();
+		//		}
+		//		try {
+		//			latch.await();
+		//		} catch (InterruptedException e1) {
+		//			e1.printStackTrace();
+		//		}
+		//		System.out.println("----------------------------------------------");
+		//		try {
+		//			TimeUnit.MINUTES.sleep(2);
+		//		} catch (InterruptedException e) {
+		//			e.printStackTrace();
+		//		}
+		//
+		//		final CountDownLatch latch2 = new CountDownLatch(num);
+		//
+		//		for (int i = 0; i < num; i++) {
+		//			new Thread(new Runnable() {
+		//
+		//				@Override
+		//				public void run() {
+		//					String sql = "select count(*) AS num from user_relat";
+		//					try {
+		//						ImpalaJdbc jdbc = pool.checkOut();
+		//						ResultSet result = jdbc.Query(sql);
+		//						while (result.next()) {
+		//							System.out.println(result.getInt("num"));
+		//						}
+		//						result.close();
+		//						pool.checkIn(jdbc);
+		//					} catch (Exception e) {
+		//						// TODO Auto-generated catch block
+		//						e.printStackTrace();
+		//					}
+		//					latch2.countDown();
+		//				}
+		//			}).start();
+		//		}
+		//		try {
+		//			latch2.await();
+		//		} catch (InterruptedException e) {
+		//			e.printStackTrace();
+		//		}
+		//
+		//		System.out.println("----------------------------------------------");
+		//
+		//		pool.clear();
 
 		//		getRelation("");
 		//		impala.closeConnection();

@@ -4,6 +4,7 @@ import zx.soft.sent.solr.allinternet.TaskUpdate;
 import zx.soft.sent.solr.firstpage.FirstPageRun;
 import zx.soft.sent.solr.firstpage.NegativeRecordsRun;
 import zx.soft.sent.solr.index.ImportRedisToSC;
+import zx.soft.sent.solr.insight.ImpalaUpdate;
 import zx.soft.sent.solr.insight.InsightHotKey;
 import zx.soft.sent.solr.insight.RelationCache;
 import zx.soft.sent.solr.insight.RelationCacheV2;
@@ -63,7 +64,7 @@ public class SentSolrDriver {
 			pgd.addClass("negativeRecordsRun", NegativeRecordsRun.class, "定时缓存负面信息关系");
 
 			pgd.addClass("importSolrToGuangxi", ImportSolrToGuangxi.class, "临时任务，将省厅数据写入广西区厅");
-
+			pgd.addClass("impalaUpdate", ImpalaUpdate.class, "定时更新impala表");
 			pgd.driver(args);
 			// Success
 			exitCode = 0;

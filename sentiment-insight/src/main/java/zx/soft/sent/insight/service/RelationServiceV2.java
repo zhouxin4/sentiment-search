@@ -128,8 +128,8 @@ public class RelationServiceV2 {
 		List<FollowDetail2> followDetails = new ArrayList<>();
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("SELECT " + HbaseConstant.COMMENT_USER + "," + HbaseConstant.COMMENT_TIME + ","
-				+ HbaseConstant.COMMENT_CONTEXT + "," + HbaseConstant.ID + "," + HbaseConstant.VIRTUAL + " FROM "
-				+ HbaseConstant.HIVE_TABLE + " WHERE ");
+				+ HbaseConstant.COMMENT_CONTEXT + "," + HbaseConstant.FOLLOW_TYPE + "," + HbaseConstant.ID + ","
+				+ HbaseConstant.VIRTUAL + " FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
 		sBuilder.append(" ORDER BY " + HbaseConstant.COMMENT_TIME + " LIMIT " + request.getRows() + " OFFSET "
 				+ request.getStart());
@@ -154,7 +154,7 @@ public class RelationServiceV2 {
 					followDetail.setFollowTime(TimeUtils.transToCommonDateStr(Long.parseLong(result
 							.getString(HbaseConstant.COMMENT_TIME))));
 					followDetail.setFollowContent(result.getString(HbaseConstant.COMMENT_CONTEXT));
-					followDetail.setFollowType(0);
+					followDetail.setFollowType(result.getInt(HbaseConstant.FOLLOW_TYPE));
 					followDetail.setFollowVirtual(result.getString(HbaseConstant.VIRTUAL));
 					followDetails.add(followDetail);
 					String id = result.getString(HbaseConstant.ID);

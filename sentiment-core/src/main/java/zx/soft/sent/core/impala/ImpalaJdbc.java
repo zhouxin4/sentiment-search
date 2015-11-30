@@ -37,8 +37,16 @@ public class ImpalaJdbc {
 
 	public ResultSet Query(String sqlStatement) throws SQLException {
 		PreparedStatement statement = conn.prepareStatement(sqlStatement);
+
 		ResultSet result = statement.executeQuery();
 		return result;
+	}
+
+	public int update(String sqlStatement) throws SQLException {
+		PreparedStatement statement = conn.prepareStatement(sqlStatement);
+		int updateCount = statement.executeUpdate(sqlStatement);
+		return updateCount;
+
 	}
 
 	public Connection getConnection() {

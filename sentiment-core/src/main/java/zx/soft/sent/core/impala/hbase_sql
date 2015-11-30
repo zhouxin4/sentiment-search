@@ -15,6 +15,7 @@ create external table user_relat (rowKey string, tu string, vu string, ts bigint
 
  -- 复制原外部表数据到新表
 insert into user_rel_parquet select rowkey,tu,vu,ts,pl,sid,id,tx,cu,ct,cc,ft from default.user_relat;
+insert overwrite user_rel_parquet select rowkey,tu,vu,ts,pl,sid,id,tx,cu,ct,cc,ft from default.user_relat;
 
  -- 统计信息
  compute stats user_relat;
@@ -28,4 +29,9 @@ SELECT cu , COUNT( cu ) AS num FROM user_rel_parquet  where tu='01012f62a89d5f8a
  
  -- 查询帖文的评论信息 
  SELECT cu,ct,cc FROM user_rel_parquet WHERE id='E0DF07621A49C087080A987F96AC3432' AND cu IN ('全球眼光','花小仙女','forwardslash') ORDER BY ct;
+ 
+dkl:
+查询比较两个impala里两个表的总数是否相同
+select count(*) from user_relat;
+select count(*) from parquet_compression.user_rel_parquet;
  
