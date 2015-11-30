@@ -77,6 +77,7 @@ public class RelationCache {
 		// 关闭资源
 		QueryCore.getInstance().close();
 		logger.info("Finishing query OA-FirstPage data...");
+		ImpalaUpdate.impalaupdate();
 	}
 
 	private void cacheHalfHourRelation(Virtual virtual, String timeFilter) throws Exception {

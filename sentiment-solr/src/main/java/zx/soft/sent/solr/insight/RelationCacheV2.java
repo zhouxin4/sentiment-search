@@ -118,6 +118,7 @@ public class RelationCacheV2 {
 					}
 				}
 			}
+			ImpalaUpdate.impalaupdate();
 		}
 		PostDataHelper.getInstance().flush();
 		// 关闭资源
