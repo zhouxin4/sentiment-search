@@ -24,15 +24,11 @@ public class ImpalaJdbc {
 		Properties props = ConfigUtil.getProps("hive-conn.properties");
 		try {
 			Class.forName(props.getProperty("jdbc.driver.class.name"));
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		try {
 			conn = DriverManager.getConnection(props.getProperty("connection.url"));
-		} catch (SQLException e) {
-			e.printStackTrace();
+		} catch (ClassNotFoundException | SQLException e) {
+			logger.error(LogbackUtil.expection2Str(e));
+			throw new RuntimeException();
 		}
-
 	}
 
 	public ResultSet Query(String sqlStatement) throws SQLException {

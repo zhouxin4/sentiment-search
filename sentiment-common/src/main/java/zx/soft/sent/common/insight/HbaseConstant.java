@@ -5,11 +5,17 @@ package zx.soft.sent.common.insight;
  */
 public class HbaseConstant {
 
-	// 用户关系表
+	// Hbase用户关系表
 	public static final String TABLE_NAME = "user_relation";
 
 	// hive映射表
-	public static final String HIVE_TABLE = "parquet_compression.user_rel_parquet";
+	public static final String HIVE_TABLE = "default.user_relat";
+
+	// impala转存表
+	public static final String IMPALA_TABLE = "parquet_compression.user_rel_parquet";
+
+	// 行键
+	public static final String ROWKEY = "rowkey";
 
 	// 列簇
 	public static final String FAMILY_NAME = "cf";

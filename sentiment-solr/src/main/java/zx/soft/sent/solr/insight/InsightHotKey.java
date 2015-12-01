@@ -1,5 +1,10 @@
 package zx.soft.sent.solr.insight;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,6 +13,9 @@ import java.util.Map;
 
 import org.ansj.app.keyword.KeyWordComputer;
 import org.ansj.app.keyword.Keyword;
+import org.ansj.domain.Term;
+import org.ansj.recognition.NatureRecognition;
+import org.ansj.util.FilterModifWord;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,16 +26,17 @@ import zx.soft.sent.common.insight.TrueUserHelper;
 import zx.soft.sent.common.insight.UserDomain;
 import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.sent.dao.insight.RiakInsight;
+import zx.soft.sent.solr.demo.HotKeyDemo;
 import zx.soft.sent.solr.domain.QueryResult;
 import zx.soft.sent.solr.query.QueryCore;
 import zx.soft.utils.algo.TopN;
 import zx.soft.utils.algo.TopN.KeyValue;
 import zx.soft.utils.json.JsonUtils;
 import zx.soft.utils.log.LogbackUtil;
+import zx.soft.utils.string.ConcatMethod;
+import zx.soft.utils.string.StringConcatHelper;
 import zx.soft.utils.time.TimeUtils;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
@@ -41,8 +50,9 @@ import com.google.common.collect.Multiset;
  */
 public class InsightHotKey {
 
-	private final static int NUM_EACH_POST = 10;
 	private static Logger logger = LoggerFactory.getLogger(InsightHotKey.class);
+
+	private final static int NUM_EACH_POST = 40;
 
 	private static KeyWordComputer kwc = new KeyWordComputer(NUM_EACH_POST);
 
@@ -57,6 +67,23 @@ public class InsightHotKey {
 	 */
 	public static void main(String[] args) {
 		InsightHotKey firstPageRun = new InsightHotKey();
+		try (BufferedReader read = new BufferedReader(new InputStreamReader(HotKeyDemo.class.getClassLoader()
+				.getResourceAsStream("stopwords_zh.txt"), Charset.forName("UTF-8")));) {
+			String line = null;
+			while ((line = read.readLine()) != null) {
+				if (!line.isEmpty()) {
+					FilterModifWord.insertStopWord(line.trim());
+				}
+			}
+		} catch (IOException e) {
+			logger.error(LogbackUtil.expection2Str(e));
+		}
+
+		FilterModifWord.insertStopNatures("m");
+		FilterModifWord.insertStopNatures("r");
+		FilterModifWord.insertStopNatures("o");
+		FilterModifWord.insertStopNatures("d");
+
 		try {
 			firstPageRun.run();
 			//			long current = getHourTime(System.currentTimeMillis());
@@ -78,7 +105,7 @@ public class InsightHotKey {
 				String trueUserId = user.getTureUserId();
 				for (int i = 0; i < 24; i++) {
 					long hours = TimeUtils.transCurrentTime(current, 0, 0, 0, -i);
-					Multiset<String> counts = getOneDayHotKeys(trueUserId, hours);
+					Multiset<String> counts = getOneHourHotKeys(trueUserId, hours);
 					Map<String, Integer> hotKeys = getTopNHotKey(counts, 20);
 					if (!hotKeys.isEmpty()) {
 						insight.insertHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(hours),
@@ -97,7 +124,7 @@ public class InsightHotKey {
 	private void insertTrueUserHotKey(String trueUserId, long milliTime) {
 		for (int i = 0; i < 720; i++) {
 			long hours = TimeUtils.transCurrentTime(milliTime, 0, 0, 0, -i);
-			Multiset<String> counts = getOneDayHotKeys(trueUserId, hours);
+			Multiset<String> counts = getOneHourHotKeys(trueUserId, hours);
 			Map<String, Integer> hotKeys = getTopNHotKey(counts, 20);
 			if (!hotKeys.isEmpty()) {
 				insight.insertHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(hours),
@@ -107,7 +134,7 @@ public class InsightHotKey {
 		}
 	}
 
-	private Multiset<String> getOneDayHotKeys(String trueUserId, long milliTime) {
+	private Multiset<String> getOneHourHotKeys(String trueUserId, long milliTime) {
 		Multiset<String> counts = HashMultiset.create();
 		QueryParams params = new QueryParams();
 		params.setQ("*:*");
@@ -119,12 +146,12 @@ public class InsightHotKey {
 		if (virtuals.isEmpty()) {
 			return counts;
 		}
-		RawType postsResult = new RawType();
+		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
+
 		for (Virtual virtual : virtuals) {
-			postsResult.addQueryParam("fq",
-					"(nickname:" + virtual.getNickname() + " AND source_id:" + virtual.getSource_id() + ")");
+			helper.add("(nickname:\"" + virtual.getNickname() + "\" AND source_id:" + virtual.getSource_id() + ")");
 		}
-		params.setFq(params.getFq() + ";" + postsResult.getQueryParams().get("fq"));
+		params.setFq(params.getFq() + ";" + helper.getString());
 		params.setRows(200);
 		QueryResult result = QueryCore.getInstance().queryData(params, false);
 		countHotKeys(result, counts);
@@ -156,15 +183,15 @@ public class InsightHotKey {
 			if (content != null) {
 				content = content.replaceAll("[http|https]+[://]+[0-9A-Za-z:/[-]_#[?][=][.][&]]*", "");
 				Collection<Keyword> keywords = kwc.computeArticleTfidf(content);
-				Collection<String> keys = Collections2.transform(keywords, new Function<Keyword, String>() {
-
-					@Override
-					public String apply(Keyword input) {
-						return input.getName();
-					}
-				});
-				//				List<String> hotKeys = HanLP.extractKeyword(content, NUM_EACH_POST);
-				counts.addAll(keys);
+				List<String> words = new ArrayList<String>();
+				for (Keyword keyword : keywords) {
+					words.add(keyword.getName());
+				}
+				List<Term> recognition = NatureRecognition.recognition(words, 0);
+				recognition = FilterModifWord.modifResult(recognition);
+				for (Term term : recognition) {
+					counts.add(term.getName());
+				}
 			}
 		}
 	}

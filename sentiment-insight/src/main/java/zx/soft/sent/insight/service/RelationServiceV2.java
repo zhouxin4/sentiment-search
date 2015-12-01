@@ -63,7 +63,7 @@ public class RelationServiceV2 {
 		new Thread(numCount).start();
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("SELECT " + HbaseConstant.COMMENT_USER + "," + HbaseConstant.COMMENT_TIME + ","
-				+ HbaseConstant.COMMENT_CONTEXT + " FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
+				+ HbaseConstant.COMMENT_CONTEXT + " FROM " + HbaseConstant.IMPALA_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
 		sBuilder.append(" ORDER BY " + HbaseConstant.COMMENT_TIME + " LIMIT " + request.getRows() + " OFFSET "
 				+ request.getStart());
@@ -129,7 +129,7 @@ public class RelationServiceV2 {
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("SELECT " + HbaseConstant.COMMENT_USER + "," + HbaseConstant.COMMENT_TIME + ","
 				+ HbaseConstant.COMMENT_CONTEXT + "," + HbaseConstant.FOLLOW_TYPE + "," + HbaseConstant.ID + ","
-				+ HbaseConstant.VIRTUAL + " FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
+				+ HbaseConstant.VIRTUAL + " FROM " + HbaseConstant.IMPALA_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
 		sBuilder.append(" ORDER BY " + HbaseConstant.COMMENT_TIME + " LIMIT " + request.getRows() + " OFFSET "
 				+ request.getStart());
@@ -208,7 +208,7 @@ public class RelationServiceV2 {
 		new Thread(numCount).start();
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("SELECT " + HbaseConstant.ID + ", COUNT(" + HbaseConstant.ID + ") AS num FROM "
-				+ HbaseConstant.HIVE_TABLE + " WHERE ");
+				+ HbaseConstant.IMPALA_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
 		sBuilder.append(" GROUP BY id ORDER BY num DESC LIMIT " + request.getRows() + " OFFSET " + request.getStart());
 		logger.info("查询发帖: {}", sBuilder.toString());
@@ -295,7 +295,7 @@ public class RelationServiceV2 {
 		 */
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("SELECT " + HbaseConstant.COMMENT_USER + ", COUNT(" + HbaseConstant.COMMENT_USER
-				+ ") AS num FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
+				+ ") AS num FROM " + HbaseConstant.IMPALA_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
 		sBuilder.append(" GROUP BY " + HbaseConstant.COMMENT_USER + " ORDER BY num DESC " + "LIMIT 10");
 		ImpalaJdbc jdbc = null;
@@ -353,7 +353,7 @@ public class RelationServiceV2 {
 		} else {
 			sBuilder.append("*");
 		}
-		sBuilder.append(") AS num FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
+		sBuilder.append(") AS num FROM " + HbaseConstant.IMPALA_TABLE + " WHERE ");
 		sBuilder.append(generateCONSQL(request));
 		ImpalaJdbc jdbc = null;
 		try {
@@ -401,7 +401,7 @@ public class RelationServiceV2 {
 			} else {
 				sBuilder.append("*");
 			}
-			sBuilder.append(") AS num FROM " + HbaseConstant.HIVE_TABLE + " WHERE ");
+			sBuilder.append(") AS num FROM " + HbaseConstant.IMPALA_TABLE + " WHERE ");
 			sBuilder.append(generateCONSQL(request));
 			logger.info("Count SQL : {}", sBuilder.toString());
 			ImpalaJdbc jdbc = null;
@@ -434,7 +434,7 @@ public class RelationServiceV2 {
 
 	private static class SolrDocCallable implements Callable<SolrDocument> {
 
-		private static final String SQL = "SELECT cr FROM " + HbaseConstant.HIVE_TABLE + " WHERE id='%s' LIMIT 1";
+		private static final String SQL = "SELECT cr FROM " + HbaseConstant.IMPALA_TABLE + " WHERE id='%s' LIMIT 1";
 
 		private String id;
 

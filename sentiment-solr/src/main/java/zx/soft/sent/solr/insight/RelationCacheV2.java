@@ -118,12 +118,12 @@ public class RelationCacheV2 {
 					}
 				}
 			}
-			ImpalaUpdate.impalaupdate();
 		}
 		PostDataHelper.getInstance().flush();
 		// 关闭资源
 		QueryCore.getInstance().close();
 		HBaseUtils.close();
+		ImpalaUpdate.default2ParquetTable();
 		logger.info("Finishing query OA-FirstPage data...");
 	}
 

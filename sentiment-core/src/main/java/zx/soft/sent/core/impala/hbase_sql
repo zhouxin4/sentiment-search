@@ -8,7 +8,7 @@ create external table user_relat (rowKey string, tu string, vu string, ts bigint
  INVALIDATE METADATA user_relat;
  
  -- 复制表结构
- create table user_rel LIKE user_relat STORED AS PARQUET;
+ create table user_rel_parquet LIKE user_relat STORED AS PARQUET;
 
  -- 描述表结构
  describe user_relat;
@@ -18,7 +18,7 @@ insert into user_rel_parquet select rowkey,tu,vu,ts,pl,sid,id,tx,cu,ct,cc,ft fro
 insert overwrite user_rel_parquet select rowkey,tu,vu,ts,pl,sid,id,tx,cu,ct,cc,ft from default.user_relat;
 
  -- 统计信息
- compute stats user_relat;
+ compute stats user_rel_parquet;
  
  
  -- 查询关系人员

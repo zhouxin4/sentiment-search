@@ -1,6 +1,7 @@
 package zx.soft.sent.solr.driver;
 
 import zx.soft.sent.solr.allinternet.TaskUpdate;
+import zx.soft.sent.solr.demo.HotKeyDemo;
 import zx.soft.sent.solr.firstpage.FirstPageRun;
 import zx.soft.sent.solr.firstpage.NegativeRecordsRun;
 import zx.soft.sent.solr.index.ImportRedisToSC;
@@ -56,7 +57,7 @@ public class SentSolrDriver {
 			pgd.addClass("userActivity", UserActivity.class, "定时更新真实用户的活跃度");
 			// 在hefei06机器上运行
 			pgd.addClass("originUpdate", OriginUpdate.class, "定时更新溯源任务的缓存");
-			
+
 			pgd.addClass("relationCache", RelationCache.class, "定时更新重点人员关系");
 
 			pgd.addClass("relationCacheV2", RelationCacheV2.class, "定时更新新浪博文关系");
@@ -64,7 +65,11 @@ public class SentSolrDriver {
 			pgd.addClass("negativeRecordsRun", NegativeRecordsRun.class, "定时缓存负面信息关系");
 
 			pgd.addClass("importSolrToGuangxi", ImportSolrToGuangxi.class, "临时任务，将省厅数据写入广西区厅");
+
 			pgd.addClass("impalaUpdate", ImpalaUpdate.class, "定时更新impala表");
+
+			pgd.addClass("hotkeu", HotKeyDemo.class, "");
+
 			pgd.driver(args);
 			// Success
 			exitCode = 0;
