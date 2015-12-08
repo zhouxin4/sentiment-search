@@ -25,6 +25,15 @@ import zx.soft.utils.log.LogbackUtil;
 import zx.soft.utils.string.StringUtils;
 import zx.soft.weibo.sina.common.WidToMid;
 
+/**
+ * 微博关系分析
+ * 运行在192.168.32.22上，用户：root
+ * 目录：/root/run-work/timer/RelationCacheV2
+ * 启动：bin/relationCacheV2.sh &
+ *
+ * @author donglei
+ *
+ */
 public class RelationCacheV2 {
 
 	private static Logger logger = LoggerFactory.getLogger(RelationCacheV2.class);

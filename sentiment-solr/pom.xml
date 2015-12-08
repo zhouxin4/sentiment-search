@@ -140,6 +140,7 @@
 						<exclude>hbase.properties</exclude>
 						<exclude>hive-conn.properties</exclude>
 						<exclude>riak.properties</exclude>
+						<exclude>stopwords_zh.txt</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

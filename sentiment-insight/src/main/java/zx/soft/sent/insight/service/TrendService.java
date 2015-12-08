@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.common.insight.Group;
-import zx.soft.sent.common.insight.Group.KeyWord;
 import zx.soft.sent.common.insight.TrueUserHelper;
 import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.sent.dao.insight.RiakInsight;
@@ -73,10 +72,10 @@ public class TrendService {
 			public TrendResult call() throws Exception {
 				TrendResult trendResult = new TrendResult();
 				List<Virtual> virtuals = TrueUserHelper.getVirtuals(nickname);
-				if (virtuals.isEmpty()) {
-					logger.info("True user '{}': has no virtuals!", nickname);
-					return trendResult;
-				}
+				//				if (virtuals.isEmpty()) {
+				//					logger.info("True user '{}': has no virtuals!", nickname);
+				//					return trendResult;
+				//				}
 				List<String> fqs = new ArrayList<>();
 				int i = 0;
 				StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
@@ -97,11 +96,11 @@ public class TrendService {
 				List<Callable<QueryResult>> calls = new ArrayList<>();
 				List<Group> groups = TrueUserHelper.getTrendGroup(nickname);
 				for (Group group : groups) {
-					final String cate = group.getUnit().getValue();
+					final String cate = group.getValue();
 					trendResult.countTrend(cate, 0);
 					helper.clear();
-					for (KeyWord word : group.getKeyWords()) {
-						helper.add("\"" + word.getValue() + "\"");
+					for (String word : group.getKeywords().split(",")) {
+						helper.add("\"" + word + "\"");
 					}
 					for (String fq : fqs) {
 						final QueryParams tmp = params.clone();

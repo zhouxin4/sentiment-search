@@ -7,7 +7,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.common.insight.CommonRequest.UserInfo;
+import zx.soft.sent.common.insight.CommonRequest.KeyUnit;
+import zx.soft.sent.common.insight.CommonRequest.Unit;
 import zx.soft.sent.common.insight.Virtuals.Virtual;
 import zx.soft.utils.http.HttpClientDaoImpl;
 import zx.soft.utils.json.JsonNodeUtils;
@@ -20,17 +21,24 @@ public class TrueUserHelper {
 	private static Logger logger = LoggerFactory.getLogger(TrueUserHelper.class);
 
 	public static List<UserDomain> getTrueUsers(String areaCode) {
-
-		String data = "{"+ "\"areaCode\":" + areaCode + "," + "\"user\":false"+"}";
-		System.out.println(data);
+		List<UserDomain> users = new ArrayList<>();
 		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
-		String response = httpclient.doPostAndGetResponse(InsightConstant.TRUE_USER, data);
-		if (!"error".equals(response)) {
-			JsonNode node = JsonNodeUtils.getJsonNode(response, "response");
-			List<UserDomain> virs = JsonUtils.parseJsonArray(node.toString(), UserDomain.class);
-			return virs;
+		// 所有重点人员
+		//		boolean[] types = { true, false };
+		// 省厅添加的用户
+		boolean[] types = { true };
+
+		for (boolean type : types) {
+			String data = "{" + "\"areaCode\":" + areaCode + "," + "\"user\":" + type + "}";
+			String response = httpclient.doPostAndGetResponse(InsightConstant.TRUE_USER, data);
+			if (!"error".equals(response)) {
+				JsonNode node = JsonNodeUtils.getJsonNode(response, "response");
+				List<UserDomain> virs = JsonUtils.parseJsonArray(node.toString(), UserDomain.class);
+				users.addAll(virs);
+			}
 		}
-		return new ArrayList<>();
+
+		return users;
 	}
 
 	public static UserDomain getUserInfo(String trueUserId) {
@@ -73,15 +81,9 @@ public class TrueUserHelper {
 
 	public static List<Group> getTrendGroup(String trueUser) {
 		CommonRequest request = new CommonRequest();
-		request.setType("unitword");
+		request.setType("unit");
 		request.setOperation(3);
-		UserInfo unit = new UserInfo();
-		unit.setCreator("201");
-		unit.setCreatorAreaCode(340000);
-		unit.setTrueUserId(trueUser);
-		unit.setPage(1);
-		unit.setSize(20);
-		request.setInfo(unit);
+		request.setKeyUnit(new KeyUnit(new Unit(340000)));
 		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
 		long start = System.currentTimeMillis();
 		String response = httpclient.doPostAndGetResponse(InsightConstant.GROUP_URL,

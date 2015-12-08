@@ -1,13 +1,9 @@
 package zx.soft.sent.common.insight;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-
 public class CommonRequest {
 	private String type;
 	private int operation;
-	@JsonProperty("unit")
-	private UserInfo info;
+	private KeyUnit keyUnit;
 
 	public String getType() {
 		return type;
@@ -25,57 +21,28 @@ public class CommonRequest {
 		this.operation = operation;
 	}
 
-	public UserInfo getInfo() {
-		return info;
+	public KeyUnit getKeyUnit() {
+		return keyUnit;
 	}
 
-	public void setInfo(UserInfo info) {
-		this.info = info;
+	public void setKeyUnit(KeyUnit keyUnit) {
+		this.keyUnit = keyUnit;
 	}
 
+	public static class KeyUnit {
+		public final Unit unit;
 
-	public static class UserInfo {
-
-		private String trueUserId;
-		private String creator;
-		private int creatorAreaCode;
-		private int page;
-		private int size;
-		public String getTrueUserId() {
-			return trueUserId;
-		}
-		public void setTrueUserId(String trueUserId) {
-			this.trueUserId = trueUserId;
-		}
-		public String getCreator() {
-			return creator;
-		}
-		public void setCreator(String creator) {
-			this.creator = creator;
+		public KeyUnit(Unit unit) {
+			this.unit = unit;
 		}
 
-		public int getCreatorAreaCode() {
-			return creatorAreaCode;
-		}
+	}
 
-		public void setCreatorAreaCode(int creatorAreaCode) {
-			this.creatorAreaCode = creatorAreaCode;
-		}
+	public static class Unit {
+		public final int systemAreaCode;
 
-		public int getPage() {
-			return page;
-		}
-
-		public void setPage(int page) {
-			this.page = page;
-		}
-
-		public int getSize() {
-			return size;
-		}
-
-		public void setSize(int size) {
-			this.size = size;
+		public Unit(int sysCode) {
+			this.systemAreaCode = sysCode;
 		}
 
 	}

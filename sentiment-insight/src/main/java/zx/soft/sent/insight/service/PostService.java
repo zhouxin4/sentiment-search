@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
 import org.apache.solr.client.solrj.response.RangeFacet;
@@ -13,11 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import zx.soft.sent.common.domain.QueryParams;
+import zx.soft.sent.common.insight.PostsResult;
 import zx.soft.sent.common.insight.TrueUserHelper;
 import zx.soft.sent.common.insight.Virtuals.Virtual;
-import zx.soft.sent.insight.domain.PostsResult;
 import zx.soft.sent.insight.utils.QueryCallable;
 import zx.soft.sent.solr.domain.QueryResult;
+import zx.soft.utils.string.ConcatMethod;
+import zx.soft.utils.string.StringConcatHelper;
 import zx.soft.utils.threads.AwesomeThreadPool;
 import zx.soft.utils.time.TimeUtils;
 
@@ -29,10 +32,15 @@ import com.google.common.collect.Collections2;
  */
 @Service
 public class PostService {
+
 	private static Logger logger = LoggerFactory.getLogger(PostService.class);
 
+	public enum GAP {
+		DAY, WEEK, MONTH;
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Object getNicknamePostInfos(QueryParams params, String nickname) {
+	public Object getNicknamePostInfos(QueryParams params, String nickname, GAP gap) {
 		long start = System.currentTimeMillis();
 		PostsResult postsResults = new PostsResult();
 		// 初始化postResult
@@ -62,17 +70,25 @@ public class PostService {
 			logger.info("True user '{}': has no virtuals!", nickname);
 			return postsResults;
 		}
-		List<Callable<QueryResult>> calls = new ArrayList<>();
 		virtuals = Collections2.filter(virtuals, new TrueUserHelper.VirtualPredicate(fq));
-		for (final Virtual virtual : virtuals) {
+
+		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
+
+		for (Virtual virtual : virtuals) {
+			helper.add(virtual.getSource_id(), "\"" + virtual.getNickname() + "\"");
+		}
+
+		List<Callable<QueryResult>> calls = new ArrayList<>();
+		for (Entry<Object, String> entrys : helper.getALLString().entrySet()) {
 			final QueryParams tmp = params.clone();
 			if (tmp == null) {
 				logger.error("Error throwed when Object cloned");
 				continue;
 			}
-			tmp.setFq(tmp.getFq() + ";nickname:\"" + virtual.getNickname() + "\";source_id:" + virtual.getSource_id());
-			calls.add(new QueryCallable(virtual.getSource_id() + "", tmp));
+			tmp.setFq(tmp.getFq() + ";nickname:(" + entrys.getValue() + ");source_id:" + entrys.getKey());
+			calls.add(new QueryCallable(entrys.getKey() + "", tmp));
 		}
+
 		if (calls.isEmpty()) {
 			logger.info("True user '{}': has no virtuals on Source_id {}!", nickname, params.getFq());
 			return postsResults;

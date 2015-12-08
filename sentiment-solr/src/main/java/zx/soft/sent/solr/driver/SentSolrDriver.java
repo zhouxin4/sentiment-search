@@ -1,12 +1,12 @@
 package zx.soft.sent.solr.driver;
 
 import zx.soft.sent.solr.allinternet.TaskUpdate;
-import zx.soft.sent.solr.demo.HotKeyDemo;
 import zx.soft.sent.solr.firstpage.FirstPageRun;
 import zx.soft.sent.solr.firstpage.NegativeRecordsRun;
 import zx.soft.sent.solr.index.ImportRedisToSC;
 import zx.soft.sent.solr.insight.ImpalaUpdate;
 import zx.soft.sent.solr.insight.InsightHotKey;
+import zx.soft.sent.solr.insight.PostCache;
 import zx.soft.sent.solr.insight.RelationCache;
 import zx.soft.sent.solr.insight.RelationCacheV2;
 import zx.soft.sent.solr.insight.UserActivity;
@@ -57,9 +57,9 @@ public class SentSolrDriver {
 			pgd.addClass("userActivity", UserActivity.class, "定时更新真实用户的活跃度");
 			// 在hefei06机器上运行
 			pgd.addClass("originUpdate", OriginUpdate.class, "定时更新溯源任务的缓存");
-
+			// 在192.168.32.22机器上运行
 			pgd.addClass("relationCache", RelationCache.class, "定时更新重点人员关系");
-
+			// 在192.168.32.22机器上运行
 			pgd.addClass("relationCacheV2", RelationCacheV2.class, "定时更新新浪博文关系");
 			// 在hefei06机器上运行
 			pgd.addClass("negativeRecordsRun", NegativeRecordsRun.class, "定时缓存负面信息关系");
@@ -68,7 +68,8 @@ public class SentSolrDriver {
 
 			pgd.addClass("impalaUpdate", ImpalaUpdate.class, "定时更新impala表");
 
-			pgd.addClass("hotkeu", HotKeyDemo.class, "");
+			// 在hefei08机器上运行
+			pgd.addClass("postCache", PostCache.class, "重点人员发帖情况缓存");
 
 			pgd.driver(args);
 			// Success

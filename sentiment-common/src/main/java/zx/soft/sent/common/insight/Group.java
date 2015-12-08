@@ -1,178 +1,105 @@
 package zx.soft.sent.common.insight;
 
-import java.util.List;
-
 public class Group {
 
-	private GroupInfo unit;
-	private List<KeyWord> keyWords;
+	private int uid;
+	private String value;
+	private String description;
+	private int activeCount;
+	private String creator;
+	private int creatorAreaCode;
+	private int systemAreaCode;
+	private String lasttime;
+	private String keywords;
+	private int page;
+	private int size;
 
-	public GroupInfo getUnit() {
-		return unit;
+	public int getUid() {
+		return uid;
 	}
 
-	public void setUnit(GroupInfo unit) {
-		this.unit = unit;
+	public void setUid(int uid) {
+		this.uid = uid;
 	}
 
-	public List<KeyWord> getKeyWords() {
-		return keyWords;
+	public String getValue() {
+		return value;
 	}
 
-	public void setKeyWords(List<KeyWord> keyWords) {
-		this.keyWords = keyWords;
+	public void setValue(String value) {
+		this.value = value;
 	}
 
-	public static class GroupInfo {
-		private int uid;
-		private String value;
-		private String description;
-		private String trueUserId;
-		private int activeCount;
-		private String creator;
-		private int creatorAreaCode;
-		private String lasttime;
-		private int page;
-		private int size;
-
-		public int getUid() {
-			return uid;
-		}
-
-		public void setUid(int uid) {
-			this.uid = uid;
-		}
-
-		public String getValue() {
-			return value;
-		}
-
-		public void setValue(String value) {
-			this.value = value;
-		}
-
-		public String getDescription() {
-			return description;
-		}
-
-		public void setDescription(String description) {
-			this.description = description;
-		}
-
-		public String getTrueUserId() {
-			return trueUserId;
-		}
-
-		public void setTrueUserId(String trueUserId) {
-			this.trueUserId = trueUserId;
-		}
-
-		public int getActiveCount() {
-			return activeCount;
-		}
-
-		public void setActiveCount(int activeCount) {
-			this.activeCount = activeCount;
-		}
-
-		public String getCreator() {
-			return creator;
-		}
-
-		public void setCreator(String creator) {
-			this.creator = creator;
-		}
-
-		public int getCreatorAreaCode() {
-			return creatorAreaCode;
-		}
-
-		public void setCreatorAreaCode(int creatorAreaCode) {
-			this.creatorAreaCode = creatorAreaCode;
-		}
-
-		public int getPage() {
-			return page;
-		}
-
-		public void setPage(int page) {
-			this.page = page;
-		}
-
-		public int getSize() {
-			return size;
-		}
-
-		public void setSize(int size) {
-			this.size = size;
-		}
-
-		public String getLasttime() {
-			return lasttime;
-		}
-
-		public void setLasttime(String lasttime) {
-			this.lasttime = lasttime;
-		}
-
+	public String getDescription() {
+		return description;
 	}
 
-	public static class KeyWord {
-		private int uid;
-		private int unitId;
-		private String value;
-		private String lasttime;
-		private int page;
-		private int size;
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-		public int getUid() {
-			return uid;
-		}
+	public int getActiveCount() {
+		return activeCount;
+	}
 
-		public void setUid(int uid) {
-			this.uid = uid;
-		}
+	public void setActiveCount(int activeCount) {
+		this.activeCount = activeCount;
+	}
 
-		public int getUnitId() {
-			return unitId;
-		}
+	public String getCreator() {
+		return creator;
+	}
 
-		public void setUnitId(int unitId) {
-			this.unitId = unitId;
-		}
+	public void setCreator(String creator) {
+		this.creator = creator;
+	}
 
-		public String getValue() {
-			return value;
-		}
+	public int getCreatorAreaCode() {
+		return creatorAreaCode;
+	}
 
-		public void setValue(String value) {
-			this.value = value;
-		}
+	public void setCreatorAreaCode(int creatorAreaCode) {
+		this.creatorAreaCode = creatorAreaCode;
+	}
 
-		public String getLasttime() {
-			return lasttime;
-		}
+	public int getSystemAreaCode() {
+		return systemAreaCode;
+	}
 
-		public void setLasttime(String lasttime) {
-			this.lasttime = lasttime;
-		}
+	public void setSystemAreaCode(int systemAreaCode) {
+		this.systemAreaCode = systemAreaCode;
+	}
 
-		public int getPage() {
-			return page;
-		}
+	public String getLasttime() {
+		return lasttime;
+	}
 
-		public void setPage(int page) {
-			this.page = page;
-		}
+	public void setLasttime(String lasttime) {
+		this.lasttime = lasttime;
+	}
 
-		public int getSize() {
-			return size;
-		}
+	public String getKeywords() {
+		return keywords;
+	}
 
-		public void setSize(int size) {
-			this.size = size;
-		}
+	public void setKeywords(String keywords) {
+		this.keywords = keywords;
+	}
 
+	public int getPage() {
+		return page;
+	}
+
+	public void setPage(int page) {
+		this.page = page;
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public void setSize(int size) {
+		this.size = size;
 	}
 
 }

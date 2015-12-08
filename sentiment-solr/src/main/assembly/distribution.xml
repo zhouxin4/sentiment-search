@@ -20,6 +20,7 @@
 				<include>hbase.properties</include>
 				<include>hive-conn.properties</include>
 				<include>riak.properties</include>
+				<include>stopwords_zh.txt</include>
 			</includes>
 			<outputDirectory>/conf</outputDirectory>
 			<filtered>true</filtered>

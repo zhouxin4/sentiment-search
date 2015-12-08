@@ -85,13 +85,12 @@ public class InsightHotKey {
 		FilterModifWord.insertStopNatures("d");
 
 		try {
-			firstPageRun.run();
-			//			long current = getHourTime(System.currentTimeMillis());
-			//			current = TimeUtils.transCurrentTime(current, 0, 0, 0, 1);
-			//			firstPageRun.insertTrueUserHotKey("86abe49fae4ad9eb07ecb765bf611209", current);
+			//			firstPageRun.run();
+			firstPageRun.insertTrueUserHotKey();
 		} catch (Exception e) {
 			logger.error("Exception:{}", LogbackUtil.expection2Str(e));
 		}
+		System.exit(0);
 	}
 
 	public void run() {
@@ -121,15 +120,24 @@ public class InsightHotKey {
 		logger.info("Finishing query OA-FirstPage data...");
 	}
 
-	private void insertTrueUserHotKey(String trueUserId, long milliTime) {
-		for (int i = 0; i < 720; i++) {
-			long hours = TimeUtils.transCurrentTime(milliTime, 0, 0, 0, -i);
-			Multiset<String> counts = getOneHourHotKeys(trueUserId, hours);
-			Map<String, Integer> hotKeys = getTopNHotKey(counts, 20);
-			if (!hotKeys.isEmpty()) {
-				insight.insertHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(hours),
-						JsonUtils.toJsonWithoutPretty(hotKeys));
-				logger.info(hotKeys.toString());
+	private void insertTrueUserHotKey() {
+		long milliTime = System.currentTimeMillis();
+		for (AreaCode area : AreaCode.values()) {
+			String areaCode = area.getAreaCode();
+			List<UserDomain> trueUsers = TrueUserHelper.getTrueUsers(areaCode);
+			for (UserDomain user : trueUsers) {
+				String trueUserId = user.getTureUserId();
+				for (int i = 5 * 720; i < 9 * 720; i++) {
+					long hours = TimeUtils.transCurrentTime(milliTime, 0, 0, 0, -i);
+					Multiset<String> counts = getOneHourHotKeys(trueUserId, hours);
+					Map<String, Integer> hotKeys = getTopNHotKey(counts, 20);
+					if (!hotKeys.isEmpty()) {
+						insight.insertHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(hours),
+								JsonUtils.toJsonWithoutPretty(hotKeys));
+						logger.info(hotKeys.toString());
+					}
+				}
+
 			}
 		}
 	}
@@ -149,7 +157,12 @@ public class InsightHotKey {
 		StringConcatHelper helper = new StringConcatHelper(ConcatMethod.OR);
 
 		for (Virtual virtual : virtuals) {
-			helper.add("(nickname:\"" + virtual.getNickname() + "\" AND source_id:" + virtual.getSource_id() + ")");
+			if (virtual.getNickname().contains("\\")) {
+				helper.add("(nickname:" + virtual.getNickname().replaceAll("[\\\\]", "?") + " AND source_id:"
+						+ virtual.getSource_id() + ")");
+			} else {
+				helper.add("(nickname:\"" + virtual.getNickname() + "\" AND source_id:" + virtual.getSource_id() + ")");
+			}
 		}
 		params.setFq(params.getFq() + ";" + helper.getString());
 		params.setRows(200);

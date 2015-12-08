@@ -1,16 +1,10 @@
 package zx.soft.sent.dao.insight;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import zx.soft.sent.common.insight.AreaCode;
-import zx.soft.sent.common.insight.TrueUserHelper;
-import zx.soft.sent.common.insight.UserDomain;
 import zx.soft.sent.core.riak.RiakInstance;
 import zx.soft.utils.log.LogbackUtil;
-import zx.soft.utils.time.TimeUtils;
 
 import com.basho.riak.client.core.query.RiakObject;
 
@@ -37,22 +31,22 @@ public class RiakInsight {
 	public static void main(String[] args) {
 		final RiakInsight insight = new RiakInsight();
 
-		for (AreaCode area : AreaCode.values()) {
-			String areaCode = area.getAreaCode();
-			List<UserDomain> trueUsers = TrueUserHelper.getTrueUsers(areaCode);
-			for (UserDomain user : trueUsers) {
-				String trueUserId = user.getTureUserId();
-				long currentTime = System.currentTimeMillis();
-				currentTime = TimeUtils.transCurrentTime(currentTime, 0, -2, 0, 0);
-				for (int i = 0; i < 24 * 30 * 2; i++) {
-					long tmp = TimeUtils.transCurrentTime(currentTime, 0, 0, 0, -i);
-					String words = insight.selectHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(tmp));
-					if (words != null) {
-						insight.deleteHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(tmp));
-					}
-				}
-			}
-		}
+		//		for (AreaCode area : AreaCode.values()) {
+		//			String areaCode = area.getAreaCode();
+		//			List<UserDomain> trueUsers = TrueUserHelper.getTrueUsers(areaCode);
+		//			for (UserDomain user : trueUsers) {
+		//				String trueUserId = user.getTureUserId();
+		//				long currentTime = System.currentTimeMillis();
+		//				currentTime = TimeUtils.transCurrentTime(currentTime, 0, -2, 0, 0);
+		//				for (int i = 0; i < 24 * 30 * 2; i++) {
+		//					long tmp = TimeUtils.transCurrentTime(currentTime, 0, 0, 0, -i);
+		//					String words = insight.selectHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(tmp));
+		//					if (words != null) {
+		//						insight.deleteHotkeys("hotkeys", trueUserId + "_" + TimeUtils.timeStrByHour(tmp));
+		//					}
+		//				}
+		//			}
+		//		}
 
 		insight.close();
 	}

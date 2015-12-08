@@ -1,8 +1,11 @@
-package zx.soft.sent.insight.domain;
+package zx.soft.sent.common.insight;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import zx.soft.utils.json.JsonUtils;
 
@@ -13,13 +16,14 @@ import zx.soft.utils.json.JsonUtils;
  */
 public class PostsResult {
 
+	private static Logger logger = LoggerFactory.getLogger(PostsResult.class);
+
 	// 发帖日期趋势图
 	private Map<String, Integer> trendOnDate = new TreeMap<>();
 	// 发帖小时趋势图
 	private Map<String, Integer> trendOnHour = new TreeMap<>();
 	// 虚拟账号分布图
 	private Map<String, Integer> virtuals = new HashMap<>();
-
 
 	public Map<String, Integer> getVirtuals() {
 		return virtuals;
@@ -45,11 +49,25 @@ public class PostsResult {
 		this.trendOnHour = trendOnHour;
 	}
 
-	public void addDateIterm(String key, int value) {
+	public void initDateIterm(String key, int value) {
 		if (trendOnDate.containsKey(key)) {
 			trendOnDate.put(key, trendOnDate.get(key) + value);
 		} else {
 			trendOnDate.put(key, value);
+		}
+	}
+
+	public void addDateIterm(String key, int value) {
+		String lastKey = null;
+		for (String curKey : trendOnDate.keySet()) {
+			if (curKey.compareTo(key) <= 0) {
+				lastKey = curKey;
+			}
+		}
+		if (lastKey == null) {
+			trendOnDate.put(key, value);
+		} else {
+			trendOnDate.put(lastKey, trendOnDate.get(lastKey) + value);
 		}
 	}
 

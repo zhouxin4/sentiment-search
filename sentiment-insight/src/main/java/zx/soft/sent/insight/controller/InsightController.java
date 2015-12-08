@@ -19,7 +19,8 @@ import zx.soft.sent.common.domain.ErrorResponse;
 import zx.soft.sent.common.domain.QueryParams;
 import zx.soft.sent.insight.domain.RelationRequest;
 import zx.soft.sent.insight.domain.RelationRequest.EndPoint;
-import zx.soft.sent.insight.service.PostService;
+import zx.soft.sent.insight.service.PostServiceV2;
+import zx.soft.sent.insight.service.PostServiceV2.GAP;
 import zx.soft.sent.insight.service.QueryService;
 import zx.soft.sent.insight.service.RelationServiceV2;
 import zx.soft.sent.insight.service.TrendService;
@@ -42,7 +43,7 @@ public class InsightController {
 	Logger logger = LoggerFactory.getLogger(InsightController.class);
 
 	@Inject
-	private PostService postService;
+	private PostServiceV2 postService;
 	@Inject
 	private QueryService queryService;
 	@Inject
@@ -84,8 +85,17 @@ public class InsightController {
 		queryParams.setFacetRangeGap(request.getParameter("facetRangeGap") == null ? "+1HOUR" : request
 				.getParameter("facetRangeGap"));
 
+		GAP gap = GAP.DAY;
+		String gapStr = request.getParameter("gap") == null ? "DAY" : request.getParameter("gap");
+		try {
+			gap = GAP.valueOf(gapStr);
+		} catch (Exception e) {
+			logger.error(LogbackUtil.expection2Str(e));
+		}
+
 		logger.info(queryParams.toString());
-		return postService.getNicknamePostInfos(queryParams, nickname);
+
+		return postService.getNicknamePostInfos(queryParams, nickname, gap);
 	}
 
 	@RequestMapping(value = "/trend", method = RequestMethod.GET)

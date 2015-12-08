@@ -1,23 +1,25 @@
 package zx.soft.sent.common.insight;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.MoreObjects;
 
+@JsonIgnoreProperties({ "qq", "phone", "email", "selfEdit" })
 public class UserDomain implements Cloneable {
-	 private String userName;
-	 private String identityCard;
-	 private int sex;
-	 private String nation;
-	 private String nativePlace;
-	 private String address;
-	 private String company;
-	 private String imageUrl;
-	 private String introduction;
-	 private String areaCode;
-	 private String createArea;
-	 private String createUser;
-	 private int pre_count;
-	 private String tureUserId;
-	 private boolean user;
+	private String userName;
+	private String identityCard;
+	private int sex;
+	private String nation;
+	private String nativePlace;
+	private String address;
+	private String company;
+	private String imageUrl;
+	private String introduction;
+	private String areaCode;
+	private String createArea;
+	private String createUser;
+	private int pre_count;
+	private String tureUserId;
+	private boolean user;
 
 	@Override
 	public String toString() {
@@ -163,7 +165,5 @@ public class UserDomain implements Cloneable {
 		domain.setUserName("zhangsan");
 		System.out.println(domain);
 	}
-
-
 
 }

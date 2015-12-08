@@ -74,18 +74,17 @@ public class TaskUpdate {
 		TaskUpdate taskUpdate = new TaskUpdate();
 		// 只进行一次
 		//		taskUpdate.tackleAllTasks();
-		// 循环更新
-		while (true) {
-			taskUpdate.tackleExecutedTasks();
-			taskUpdate.tackleFinishedTasks();
-			// 休息30秒
+		taskUpdate.tackleExecutedTasks();
+		taskUpdate.tackleFinishedTasks();
+
+		pool.shutdown();
+		while (!pool.isTerminated()) {
 			try {
-				Thread.sleep(30_000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				logger.error("Exception:{}", LogbackUtil.expection2Str(e));
+				logger.error("Exception: {}", LogbackUtil.expection2Str(e));
 			}
 		}
-		//		taskUpdate.close(); // 多线程不能关闭
 	}
 
 	/**
