@@ -112,8 +112,10 @@ public class InsightController {
 		queryParams.setQ(request.getParameter("q") == null ? "*:*" : request.getParameter("q"));
 		queryParams.setFq(request.getParameter("fq") == null ? "" : request.getParameter("fq"));
 		queryParams.setQop("OR");
+		boolean isUser = request.getParameter("user") == null ? Boolean.TRUE : Boolean.parseBoolean(request
+				.getParameter("user"));
 		logger.info(queryParams.toString());
-		return trendService.getTrendInfos(queryParams, nickname);
+		return trendService.getTrendInfos(queryParams, nickname, isUser);
 	}
 
 	@RequestMapping(value = "/query", method = RequestMethod.GET)

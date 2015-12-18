@@ -41,8 +41,11 @@ public class CommonRequest {
 	public static class Unit {
 		public final int systemAreaCode;
 
-		public Unit(int sysCode) {
+		public final boolean user;
+
+		public Unit(int sysCode, boolean isUser) {
 			this.systemAreaCode = sysCode;
+			this.user = isUser;
 		}
 
 	}

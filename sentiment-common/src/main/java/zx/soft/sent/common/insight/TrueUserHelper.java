@@ -1,7 +1,6 @@
 package zx.soft.sent.common.insight;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -24,9 +23,9 @@ public class TrueUserHelper {
 		List<UserDomain> users = new ArrayList<>();
 		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
 		// 所有重点人员
-		//		boolean[] types = { true, false };
+		boolean[] types = { true, false };
 		// 省厅添加的用户
-		boolean[] types = { true };
+		//		boolean[] types = { true };
 
 		for (boolean type : types) {
 			String data = "{" + "\"areaCode\":" + areaCode + "," + "\"user\":" + type + "}";
@@ -79,22 +78,23 @@ public class TrueUserHelper {
 		return new ArrayList<>();
 	}
 
-	public static List<Group> getTrendGroup(String trueUser) {
+	public static List<Group> getTrendGroup(boolean isUser) {
+		List<Group> groups = new ArrayList<>();
+		long start = System.currentTimeMillis();
 		CommonRequest request = new CommonRequest();
 		request.setType("unit");
 		request.setOperation(3);
-		request.setKeyUnit(new KeyUnit(new Unit(340000)));
+		request.setKeyUnit(new KeyUnit(new Unit(340000, isUser)));
 		HttpClientDaoImpl httpclient = new HttpClientDaoImpl();
-		long start = System.currentTimeMillis();
 		String response = httpclient.doPostAndGetResponse(InsightConstant.GROUP_URL,
 				JsonUtils.toJsonWithoutPretty(request));
-		logger.info("获取关键词分组耗时: {}", System.currentTimeMillis() - start);
 		if (!"error".equals(response)) {
 			JsonNode node = JsonNodeUtils.getJsonNode(response, "response");
 			List<Group> group = JsonUtils.parseJsonArray(node.toString(), Group.class);
-			return group;
+			groups.addAll(group);
 		}
-		return new LinkedList<>();
+		logger.info("获取关键词分组耗时: {}", System.currentTimeMillis() - start);
+		return groups;
 	}
 
 	public static class VirtualPredicate implements Predicate<Virtual> {

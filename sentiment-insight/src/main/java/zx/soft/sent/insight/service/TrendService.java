@@ -48,7 +48,7 @@ public class TrendService {
 
 	private static Logger logger = LoggerFactory.getLogger(TrendService.class);
 
-	public Object getTrendInfos(final QueryParams params, final String nickname) {
+	public Object getTrendInfos(final QueryParams params, final String nickname, final boolean isUser) {
 		long start = System.currentTimeMillis();
 		// 获得热门关键词
 		Callable<TrendResult> hotkeyCall = new Callable<TrendResult>() {
@@ -94,7 +94,7 @@ public class TrendService {
 				}
 
 				List<Callable<QueryResult>> calls = new ArrayList<>();
-				List<Group> groups = TrueUserHelper.getTrendGroup(nickname);
+				List<Group> groups = TrueUserHelper.getTrendGroup(isUser);
 				for (Group group : groups) {
 					final String cate = group.getValue();
 					trendResult.countTrend(cate, 0);

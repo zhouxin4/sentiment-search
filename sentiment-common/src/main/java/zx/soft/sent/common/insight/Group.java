@@ -1,5 +1,8 @@
 package zx.soft.sent.common.insight;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties({ "user" })
 public class Group {
 
 	private int uid;

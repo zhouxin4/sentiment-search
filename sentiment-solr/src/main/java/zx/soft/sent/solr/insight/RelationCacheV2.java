@@ -195,7 +195,7 @@ public class RelationCacheV2 {
 
 	public RecordInfo transCommentToRecord(Comment comment) {
 		RecordInfo recordInfo = new RecordInfo();
-		recordInfo.setPlatform(7);
+		recordInfo.setPlatform(3);
 		recordInfo.setSource_id(7);
 		recordInfo.setSource_name("新浪微博");
 		recordInfo.setLocation_code(110000);
