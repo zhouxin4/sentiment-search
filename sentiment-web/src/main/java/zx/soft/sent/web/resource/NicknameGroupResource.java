@@ -54,8 +54,8 @@ public class NicknameGroupResource extends ServerResource {
 		queryParams.setWt(params.get("wt") == null ? "json" : params.get("wt"));
 		queryParams.setHlfl(params.get("hlfl") == null ? "" : params.get("hlfl"));
 		queryParams.setHlsimple(params.get("hlsimple") == null ? "" : params.get("hlsimple"));
-		queryParams.setFacetQuery(params.get("facetQuery") == null ? "" : params.get("facetQuery"));
-		queryParams.setFacetField(params.get("facetField") == null ? "nickname" : params.get("facetField"));
+//		queryParams.setFacetQuery(params.get("facetQuery") == null ? "" : params.get("facetQuery"));
+//		queryParams.setFacetField(params.get("facetField") == null ? "nickname" : params.get("facetField"));
 		logger.info(queryParams.toString());
 	}
 
